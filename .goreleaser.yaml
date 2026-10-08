@@ -45,3 +45,20 @@ release:
     owner: guaidao2
     name: Hack4all
   name_template: "Hack4all v{{ .Version }}"
+  header: |
+    A bilingual technique guide for penetration testing, red teaming and bug
+    bounty hunting.
+
+    One self-contained binary, three front-ends over the same content:
+
+    - **TUI** — run `hack4all`: a searchable list with the full technique beside it
+    - **Web** — run `hack4all web`: the same library in a browser, with the red
+      team coverage map drawn at `/map.html`
+    - **CLI** — `hack4all -x "QUERY" --json`: for scripts and AI agents
+
+    50 techniques across 24 categories, written in English and Chinese in the
+    same file, every one with a detection and a mitigation section. No emoji.
+
+    The binaries are static (`CGO_ENABLED=0`) and the knowledge base is embedded,
+    so there is nothing to install alongside them. Check a download against
+    `hack4all_{{ .Version }}_checksums.txt`.
