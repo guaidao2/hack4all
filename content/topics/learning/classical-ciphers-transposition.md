@@ -341,7 +341,7 @@ Neither alone is enough, and the failure of each is exactly what Parts 1 and 3 d
 
 There is one more inheritance: **interleaving**. Transposition is used deliberately in communications to spread a burst of errors across many codewords, so that an error-correcting code can fix them. Same operation, opposite intent.
 
-### Detect it, and why you probably will not
+### Detection and mitigation, in production and in analysis
 
 - **In production, a pure transposition cipher is essentially extinct**, and this is why: it changes nothing about the statistics of the data, so even a simple frequency check reveals that the letters are unmodified. Anyone who runs the Part 1 diagnostic will recognise it in seconds.
 - **What you will meet instead is a transposition as one component**, and the detection question changes with it. A permutation applied on its own is visible as a rearrangement; a permutation inside a modern cipher is invisible and is not meant to be seen.
@@ -675,7 +675,7 @@ def break_columnar_annealing(ciphertext, ncols, iterations=20000):
 
 还有一份遗产：**交织（interleaving）**。换位被刻意用在通信里，把一阵突发的错误分散到很多码字上，好让纠错码能修掉它们。**同一个操作，相反的意图。**
 
-### 检测它，以及为什么你大概不会遇到
+### 检测与缓解（生产环境与分析侧）
 
 - **在生产环境里，纯粹的换位密码基本绝迹了**，原因就在这儿：它对数据的统计性质什么都不改变，所以哪怕一次简单的频率检查都会暴露"字母没被动过"。任何跑过第一篇诊断的人几秒内就能认出来。
 - **你真正会遇到的是"换位作为其中一个组件"**，而检测问题也随之改变。单独施加的一个置换，表现为一次重排；现代密码内部的置换则不可见，本来也不该被看见。
