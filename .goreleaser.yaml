@@ -56,11 +56,46 @@ release:
       team coverage map drawn at `/map.html`
     - **CLI** — `hack4all -x "QUERY" --json`: for scripts and AI agents
 
-    98 techniques across 26 categories, including a beginner track and a detail
-    layer that explains the mechanism before the command, written in English and
-    Chinese in the same file, every entry with a detection and a mitigation
-    section. No emoji.
+    Query syntax is field-prefixed — `category:`, `tag:`, `tool:`, `attck:`,
+    `platform:`, `difficulty:`, `id:` — and bare terms are ANDed. Tags carry
+    Chinese terms as well as English ones (`越权`, `未授权访问`), because readers
+    search in the language they think in.
 
-    The binaries are static (`CGO_ENABLED=0`) and the knowledge base is embedded,
-    so there is nothing to install alongside them. Check a download against
-    `hack4all_{{ .Version }}_checksums.txt`.
+    98 techniques across 26 categories, in two layers: a beginner track for
+    someone starting from nothing, and a detail layer that explains the mechanism
+    before the command. Written in English first with Chinese alongside, in the
+    same file, every entry with a detection and a mitigation section. No emoji.
+
+    Six static binaries — Linux, macOS and Windows, amd64 and arm64. The knowledge
+    base is embedded and `CGO_ENABLED=0`, so there is nothing to install alongside
+    them and no runtime dependency. Check a download against
+    `hack4all_{{ .Version }}_checksums.txt`, published alongside.
+
+    Upgrading needs nothing: content is compiled into the binary, so a new binary
+    is a new knowledge base, and the query syntax and the JSON shape are unchanged
+    since 0.3.0.
+
+    If you are planning or finishing a red team engagement, start with the tactical
+    map — `hack4all -x id:red-team-tactical-map` — a coverage checklist for the
+    whole engagement rather than a single technique. The web UI draws the same file
+    at `/map.html`: stages as a timeline, tickable items, and a progress bar you can
+    leave open while you work.
+  footer: |
+    ---
+
+    ## 中文摘要
+
+    **给授权安全工作用的双语技术点指南**：渗透测试、红队项目、范围内的 bug bounty，
+    以及检测同样这些手法的防守工程。
+
+    一个 Go 二进制、一份内容库、三个入口 —— 终端界面（`hack4all`）、本地网页
+    （`hack4all web`）、以及给脚本和 AI 用的非交互命令行（`hack4all -x`）。内容英文
+    优先、中文并存，放在同一个文件里。
+
+    一个技术点就是一个 Markdown 文件：frontmatter 放双语标题与摘要、正文用语言标记
+    切分、分类只由目录结构决定。格式已冻结，由 `hack4all check` 守着，而且每条都必须
+    有检测与缓解小节才能通过。
+
+    **98 个技术点、26 个分类**，分新手入门轨与详解轨两层。六个平台（Linux / macOS /
+    Windows，amd64 与 arm64）都是静态二进制、内容已嵌入，不需要再装任何东西，下载后
+    用 `hack4all_{{ .Version }}_checksums.txt` 校验即可。
