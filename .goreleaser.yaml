@@ -56,8 +56,9 @@ release:
       team coverage map drawn at `/map.html`
     - **CLI** — `hack4all -x "QUERY" --json`: for scripts and AI agents
 
-    50 techniques across 24 categories, written in English and Chinese in the
-    same file, every one with a detection and a mitigation section. No emoji.
+    60 techniques across 26 categories, including a beginner track that starts
+    from the file format and the protocol, written in English and Chinese in the
+    same file, every entry with a detection and a mitigation section. No emoji.
 
     The binaries are static (`CGO_ENABLED=0`) and the knowledge base is embedded,
     so there is nothing to install alongside them. Check a download against
