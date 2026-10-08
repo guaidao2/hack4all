@@ -3,6 +3,8 @@
 **A bilingual technique guide for penetration testing, red teaming and bug bounty hunting.**
 **面向渗透测试 / 红队 / bug bounty 的双语技术点指南。**
 
+[中文](README.zh.md) | English
+
 One Go binary, one knowledge base, three ways in: an interactive terminal UI, a
 local web page, and a non-interactive command line that scripts and AI agents
 can call. Content is written in English first with Chinese alongside, so a
@@ -262,7 +264,7 @@ from silently eating the payload. Something to decide at release time, not now.
 
 Early but usable. The three front-ends work end to end, the TUI renders the
 Markdown, the content format is frozen and `hack4all check` guards it. The
-The knowledge base covers 50 techniques across 24 categories, and is still
+knowledge base covers 50 techniques across 24 categories, and is still
 growing. If you are planning or finishing a red team engagement, start with the
 tactical map — `hack4all -x id:red-team-tactical-map` — which is a coverage
 checklist for the whole engagement rather than a single technique. The web UI
