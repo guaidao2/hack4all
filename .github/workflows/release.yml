@@ -1,0 +1,40 @@
+name: release
+
+# Pushing a version tag is the whole release process: this workflow builds every
+# platform, writes the checksums and publishes the GitHub release. Doing it here
+# rather than on a laptop means the artefacts are built from the tagged commit by
+# a machine anyone can inspect.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # GoReleaser builds the changelog from the tag history.
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      # A release must not ship a knowledge base that fails its own check.
+      - name: Check the knowledge base
+        run: go run ./cmd/hack4all check --strict
+
+      - name: Test
+        run: go test ./... -count=1
+
+      - name: Release
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
