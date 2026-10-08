@@ -82,9 +82,6 @@ func Serve(cfg Config) error {
 		}
 	}
 	fmt.Printf("%d techniques loaded. Press Ctrl+C to stop.\n", cfg.Library.Len())
-	if !local {
-		fmt.Println("Note: reachable from the network. Anyone who can reach this host can read the library.")
-	}
 	if cfg.OpenBrowser {
 		go openBrowser(url)
 	}
@@ -257,11 +254,8 @@ func logRequests(next http.Handler) http.Handler {
 	})
 }
 
-// bindIsLocal reports whether a listener is reachable only from this machine.
-//
-// Binding to 0.0.0.0 is a legitimate way to share the library with a team, but
-// it should never happen silently: the content is attack technique material, and
-// the operator deserves to be told they just published it to the network.
+// bindIsLocal reports whether a listener is reachable only from this machine,
+// which decides whether Serve prints the addresses a colleague could use.
 func bindIsLocal(addr net.Addr) bool {
 	if addr == nil {
 		return false
