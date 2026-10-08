@@ -9,6 +9,7 @@ tools: [php, curl, python3, Burp Suite]
 attck: [T1190, T1505.003]
 platform: [web]
 difficulty: intermediate
+updated: 2026-10-08
 ---
 
 <!-- lang:en -->
