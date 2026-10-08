@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hack4all — red team tactical map</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/map.css">
+</head>
+<body class="map-page">
+<header class="topbar">
+  <div class="brand">HACK4ALL</div>
+  <div class="map-title" id="mapTitle">Red team tactical map</div>
+  <a class="lang-btn" id="back" href="/">search</a>
+  <div class="langs">
+    <button data-lang="en" class="lang-btn">EN</button>
+    <button data-lang="zh" class="lang-btn">中文</button>
+  </div>
+</header>
+
+<main class="mapwrap">
+  <div class="progress">
+    <div class="bar"><span id="bar"></span></div>
+    <div class="pcount"><b id="done">0</b> / <span id="total">0</span> <span id="ptext">confirmed</span></div>
+    <button class="lang-btn" id="reset">reset</button>
+  </div>
+  <p class="hint" id="hint"></p>
+
+  <section id="surfaces">
+    <h2 class="sect" id="surfTitle">Surfaces that cut across every stage</h2>
+    <div class="surfgrid" id="surfgrid"></div>
+  </section>
+
+  <section>
+    <h2 class="sect" id="stageTitle">The stages</h2>
+    <ol class="stagelist" id="stagelist"></ol>
+  </section>
+
+  <section id="missSect">
+    <h2 class="sect" id="missTitle">Most often missed</h2>
+    <ol class="misslist" id="misslist"></ol>
+  </section>
+</main>
+
+<script src="/map.js"></script>
+</body>
+</html>

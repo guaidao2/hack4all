@@ -110,6 +110,7 @@ func (s *server) apiMux() *http.ServeMux {
 	mux.HandleFunc("/api/technique", s.handleTechnique)
 	mux.HandleFunc("/api/categories", s.handleCategories)
 	mux.HandleFunc("/api/stats", s.handleStats)
+	mux.HandleFunc("/api/tactical-map", s.handleTacticalMap)
 	return mux
 }
 
@@ -203,6 +204,30 @@ func (s *server) handleStats(w http.ResponseWriter, r *http.Request) {
 		"languages":  []string{core.LangEN, core.LangZH},
 		"errors":     len(s.lib.Errors()),
 	})
+}
+
+// GET /api/tactical-map?id=&lang=
+//
+// The coverage map is written as Markdown so it reads in a terminal and is
+// searchable like any other entry; it is parsed here so the same file can also
+// be drawn. One source, two presentations — the picture cannot drift away from
+// the text.
+func (s *server) handleTacticalMap(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		id = core.DefaultMapID
+	}
+	t, ok := s.lib.Get(id)
+	if !ok {
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": "unknown technique: " + id})
+		return
+	}
+	m := core.TacticalMapOf(t, s.lang(r))
+	if m == nil {
+		writeJSON(w, http.StatusNotFound, map[string]string{"error": "not a coverage map: " + id})
+		return
+	}
+	writeJSON(w, http.StatusOK, m)
 }
 
 // =============================================================================
