@@ -111,8 +111,18 @@ func TestAPISearchFindsChineseText(t *testing.T) {
 	if len(resp.Matches) == 0 {
 		t.Fatal("a Chinese query should match Chinese content")
 	}
-	if resp.Matches[0].ID != "linux-privilege-escalation" {
-		t.Errorf("first match = %q, want linux-privilege-escalation", resp.Matches[0].ID)
+	// Which entry ranks first changes as the knowledge base grows (several
+	// techniques are about privilege escalation now), so assert relevance rather
+	// than a fixed order: the technique about Linux must be among the results.
+	var found bool
+	for _, m := range resp.Matches {
+		if m.ID == "linux-privilege-escalation" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("expected linux-privilege-escalation among the matches, got %v", ids(resp.Matches))
 	}
 }
 
