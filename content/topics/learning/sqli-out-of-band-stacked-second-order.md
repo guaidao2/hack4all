@@ -125,7 +125,7 @@ db.execute("CREATE TABLE t(x)")
 
 try:
     db.execute("INSERT INTO t VALUES (1); INSERT INTO t VALUES (2)")
-except sqlite3.Warning as e:
+except sqlite3.ProgrammingError as e:      # newer Python raises this for multi-statement input
     print('execute      : refused ->', e)
 
 db.executescript("INSERT INTO t VALUES (3); INSERT INTO t VALUES (4)")
@@ -366,7 +366,7 @@ db.execute("CREATE TABLE t(x)")
 
 try:
     db.execute("INSERT INTO t VALUES (1); INSERT INTO t VALUES (2)")
-except sqlite3.Warning as e:
+except sqlite3.ProgrammingError as e:      # newer Python raises this for multi-statement input
     print('execute      : 被拒绝 ->', e)
 
 db.executescript("INSERT INTO t VALUES (3); INSERT INTO t VALUES (4)")
