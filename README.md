@@ -225,7 +225,7 @@ from silently eating the payload. Something to decide at release time, not now.
 
 Early but usable. The three front-ends work end to end, the TUI renders the
 Markdown, the content format is frozen and `hack4all check` guards it. The
-knowledge base is still small (7 techniques) — coverage breadth is the next big
+knowledge base is still small (9 techniques) — coverage breadth is the next big
 chunk of work.
 
 Tags may carry Chinese terms as well as English ones (`越权`, `未授权访问`), because
