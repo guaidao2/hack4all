@@ -23,18 +23,18 @@ the binaries are static (`CGO_ENABLED=0`), so there is nothing else to install.
 
 ```bash
 # Linux / macOS
-chmod +x hack4all_v0.1.0_linux_amd64
-./hack4all_v0.1.0_linux_amd64 -x "kerberos"
+chmod +x hack4all_v1.0.0_linux_amd64
+./hack4all_v1.0.0_linux_amd64 -x "kerberos"
 
 # Windows (PowerShell)
-.\hack4all_v0.1.0_windows_amd64.exe -x "kerberos"
+.\hack4all_v1.0.0_windows_amd64.exe -x "kerberos"
 ```
 
 Check a download against the checksums published alongside it:
 
 ```bash
-sha256sum -c hack4all_0.1.0_checksums.txt         # Linux
-shasum -a 256 -c hack4all_0.1.0_checksums.txt     # macOS
+sha256sum -c hack4all_1.0.0_checksums.txt         # Linux
+shasum -a 256 -c hack4all_1.0.0_checksums.txt     # macOS
 ```
 
 To build it yourself instead, see [Build](#build) below.
@@ -262,7 +262,7 @@ from silently eating the payload. Something to decide at release time, not now.
 
 ## Status
 
-Early but usable. The three front-ends work end to end, the TUI renders the
+Stable as of 1.0. The three front-ends work end to end, the TUI renders the
 Markdown, the content format is frozen and `hack4all check` guards it. The
 knowledge base covers 98 techniques across 26 categories (including the
 beginner track), and is still

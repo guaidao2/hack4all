@@ -56,7 +56,7 @@ release:
       team coverage map drawn at `/map.html`
     - **CLI** — `hack4all -x "QUERY" --json`: for scripts and AI agents
 
-    69 techniques across 26 categories, including a beginner track and a detail
+    98 techniques across 26 categories, including a beginner track and a detail
     layer that explains the mechanism before the command, written in English and
     Chinese in the same file, every entry with a detection and a mitigation
     section. No emoji.

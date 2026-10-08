@@ -14,18 +14,18 @@
 
 ```bash
 # Linux / macOS
-chmod +x hack4all_v0.1.0_linux_amd64
-./hack4all_v0.1.0_linux_amd64 -x "kerberos"
+chmod +x hack4all_v1.0.0_linux_amd64
+./hack4all_v1.0.0_linux_amd64 -x "kerberos"
 
 # Windows（PowerShell）
-.\hack4all_v0.1.0_windows_amd64.exe -x "kerberos"
+.\hack4all_v1.0.0_windows_amd64.exe -x "kerberos"
 ```
 
 校验下载到的文件与发布时一致：
 
 ```bash
-sha256sum -c hack4all_0.1.0_checksums.txt         # Linux
-shasum -a 256 -c hack4all_0.1.0_checksums.txt     # macOS
+sha256sum -c hack4all_1.0.0_checksums.txt         # Linux
+shasum -a 256 -c hack4all_1.0.0_checksums.txt     # macOS
 ```
 
 想自己编译，见下面的 [编译](#编译) 一节。
@@ -220,7 +220,7 @@ hack4all web --content ./content/topics
 
 ## 状态
 
-早期但可用。三种入口端到端都能跑，终端界面能渲染 Markdown，内容格式已冻结且由 `hack4all check` 守着。内容库现在有 **98 个技术点、26 个分类**（含新手入门轨与详解篇），还在继续加。如果你正准备开始或刚结束一次红队项目，先看战术地图 —— `hack4all -x id:red-team-tactical-map` —— 它是一份覆盖查漏清单，而不是单个技术点。网页界面把同一份文件画成 `/map.html`：阶段是时间线、检查项可勾选，还有一个可以一直开着的工作进度条。
+自 1.0 起稳定。三种入口端到端都能跑，终端界面能渲染 Markdown，内容格式已冻结且由 `hack4all check` 守着。内容库现在有 **98 个技术点、26 个分类**（含新手入门轨与详解篇），还在继续加。如果你正准备开始或刚结束一次红队项目，先看战术地图 —— `hack4all -x id:red-team-tactical-map` —— 它是一份覆盖查漏清单，而不是单个技术点。网页界面把同一份文件画成 `/map.html`：阶段是时间线、检查项可勾选，还有一个可以一直开着的工作进度条。
 
 标签可以带中文词，也可以带英文词（`越权`、`未授权访问`）—— 因为读者搜索时用的是他思考的那门语言，而由文件名派生的 id 未必是他伸手去够的那个词。
 
