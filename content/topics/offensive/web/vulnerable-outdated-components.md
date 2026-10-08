@@ -78,7 +78,7 @@ Always confirm a version match with a behaviour test. A version string in a head
 - **Compare builds.** A patched and an unpatched instance of the same product often differ in one file hash or one header.
 - **Look for the exploit's prerequisites** rather than the version: a vulnerable endpoint that exists is enough, regardless of what the version says.
 
-### Detection, from the defender's side
+### Detection
 
 - **You cannot patch what you do not know you run.** An inventory that covers servers but not appliances and not transitive dependencies is the root cause of most of this.
 - **SBOM generation** (Syft, cyclonedx-gomod, and equivalents) makes the dependency tree visible; the same data feeds vulnerability scanning.
@@ -163,7 +163,7 @@ nuclei -u https://target.example -t http/cves/2021/CVE-2021-44228.yaml
 - **对比构建。** 同一产品的已修补实例和未修补实例，常常只差一个文件哈希或一个响应头。
 - **找利用的前置条件，而不是版本**：一个真实存在的有漏洞端点就够了，版本号说什么并不重要。
 
-### 检测（防守方视角）
+### 检测
 
 - **你不知道自己在跑什么，就修不了它。** 台账只覆盖服务器、不覆盖设备和传递依赖，就是这一类问题的根因。
 - **生成 SBOM**（Syft、cyclonedx-gomod 等）让依赖树可见，同一份数据还能喂给漏洞扫描。

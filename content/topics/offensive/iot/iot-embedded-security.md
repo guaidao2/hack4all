@@ -93,7 +93,7 @@ Network services usually need their configuration adjusted (different interface 
 - **Wireless**: BLE often has an unauthenticated GATT characteristic that performs an action, or a pairing process that can be replayed. Zigbee and 433/868 MHz devices frequently accept a replayed command with no rolling code.
 - **Cloud and mobile**: the device API is usually the easiest target in the whole chain, because it is a normal web application — and the credentials to reach it are extractable from the device or the app. Request signing that uses a key stored in the firmware is not a control, since you have the firmware.
 
-### Detection, from the defender's side
+### Detection
 
 - **You cannot secure devices you do not know exist.** Passive network monitoring for the device vendor's traffic patterns, and DHCP or DNS logs, find IoT devices that the asset inventory missed.
 - **Segment them.** A separate VLAN with no route to management networks is the single most effective control, because it removes the "compromised camera becomes a foothold" path.
@@ -192,7 +192,7 @@ qemu-mipsel -L ./rootfs ./rootfs/usr/sbin/httpd
 - **无线**：BLE 上常有一个未认证的 GATT 特征就能触发动作，或者配对流程可以重放。Zigbee 与 433/868 MHz 设备常常接受重放的指令，没有滚动码。
 - **云与移动端**：设备 API 通常是整条链上最好打的目标，因为它就是个普通 Web 应用 —— 而访问它所需的凭据可以从设备或 App 里提取出来。**用固件里的密钥做请求签名不是控制**，因为你已经拿到固件了。
 
-### 检测（防守方视角）
+### 检测
 
 - **你不知道存在的设备，你保护不了。** 被动监控设备厂商的流量特征，加上 DHCP 或 DNS 日志，能找出资产台账漏掉的 IoT 设备。
 - **给它们分段。** 一个与管理网不通的独立 VLAN 是最有效的单项控制，因为它切断了"摄像头被拿下 → 变成落脚点"这条路。

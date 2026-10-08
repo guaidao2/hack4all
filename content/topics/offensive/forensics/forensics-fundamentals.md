@@ -91,7 +91,7 @@ All of it leaves traces, and knowing where is the value of studying the techniqu
 - **USN journal** entries exist even when the file they refer to has been deleted.
 - **Missing logs at the collector** are themselves a signal, which is the argument for shipping logs off the host.
 
-### Detection, from the defender's side
+### Detection
 
 - **Ship logs off the host in real time.** The only reliable defence against log deletion is that the deletion happens on a copy you control.
 - **Deploy memory acquisition tooling in advance.** Installing it during an incident takes time you may not have.
@@ -186,7 +186,7 @@ psort.py -o l2tcsv case.plaso "date > '2026-09-01' and date < '2026-10-01'" > ti
 - **USN journal** 里即使指向的文件已被删除，条目依然存在。
 - **收集端缺失的日志**本身就是信号 —— 这正是"把日志送出主机"的论据。
 
-### 检测（防守方视角）
+### 检测
 
 - **实时把日志送出主机。** 对抗日志删除唯一可靠的办法，是删除发生在你控制的副本上。
 - **提前部署内存采集工具。** 事件发生时才去装，时间可能不够。

@@ -62,7 +62,7 @@ The lessons that transfer:
 - Check whether artifacts are signed and whether provenance is published.
 - For a product rather than a repository, look at the update mechanism (covered in the integrity entry) and at the vendor's own download path.
 
-### Detection, from the defender's side
+### Detection
 
 - **New network destinations during builds.** A dependency that suddenly talks to an IP is the clearest signal that something is wrong, and almost nobody watches for it.
 - **Maintainer and ownership changes** on packages you depend on, which registries expose through their APIs.
@@ -133,7 +133,7 @@ The lessons that transfer:
 - 产物是否签名、是否发布 provenance。
 - 如果目标是产品而不是仓库，看它的更新机制（完整性那篇有讲）和厂商自己的下载路径。
 
-### 检测（防守方视角）
+### 检测
 
 - **构建期间出现的新网络目标。** 一个依赖突然向外连某个 IP，是最清楚的信号，而几乎没人在看这个。
 - **你所依赖的包发生维护者或所有权变更** —— 仓库 API 会暴露这些。

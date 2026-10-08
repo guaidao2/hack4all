@@ -105,6 +105,16 @@ Blind IDOR exists: the endpoint acts on an object you cannot read. Prove it indi
 2. Ask B (your second session) to look at what changed — a setting, a counter, an email, an order state.
 3. That observable change is the proof.
 
+### Detection
+
+- **An IDOR is silent by design.** A request that should have been denied returns an ordinary `200`, so nothing in the response is anomalous and nothing in a default access log says that an object was fetched by the wrong person.
+- **Log the identity and the object together**: `subject`, `object_id`, `owner`, `decision`. An access log without the object cannot answer the only question that matters, which is whether A read B's row.
+- **Alert on the pattern rather than on a single request**: one session touching many object ids in sequence, a walk through `1001, 1002, 1003`, or an account reading objects it never created.
+- **Cross-tenant access is a hard violation** with no legitimate case, and it deserves an immediate alert rather than a line in a weekly report.
+- **Watch the bulk endpoints** — exports, reports, search — because they leak the most data and their authorization is the most often forgotten.
+- **Instrument the authorization decision itself**, so that a handler touching an object without going through the check is an event. That turns "we think every endpoint checks" into something observable.
+- **Test with two accounts in CI** and alert when that test fails, which is the only way to notice a regression in a check nobody looks at.
+
 ### Mitigation
 
 - **Check authorization on the object, in the handler, every time.** Not in the router, not in a middleware that only knows the URL shape, and not only in the UI.
@@ -205,6 +215,16 @@ ffuf -u 'https://target/api/v1/invoices/FUZZ' -H "Cookie: session=A_SESSION" \
 1. 以 A 的身份，用 B 的对象 id 触发那个操作。
 2. 让 B（你的第二个会话）去看什么变了 —— 某个设置、计数器、邮件、订单状态。
 3. 那个可观察的变化就是证据。
+
+### 检测
+
+- **IDOR 天生是安静的。** 本该被拒绝的请求返回一个普通的 `200`，所以响应里没有异常，默认访问日志里也没有任何东西说明"这个对象是被不该看的人取走的"。
+- **把身份和对象一起记下来**：`subject`、`object_id`、`owner`、`decision`。不带对象的访问日志回答不了唯一要紧的那个问题 —— A 到底有没有读到 B 的那一行。
+- **对模式告警，而不是对单个请求告警**：同一个会话连续触碰大量对象 id、按 `1001, 1002, 1003` 的顺序走一遍、或者一个账号去读它从未创建过的对象。
+- **跨租户访问是硬性违规**，没有任何正当场景，值得立即告警，而不是写进周报里的一行。
+- **盯住批量接口** —— 导出、报表、搜索 —— 它们泄漏的数据最多，授权也最常被忘掉。
+- **对授权决定本身埋点**，让"处理函数碰了对象却没走检查"本身成为一个事件。这把"我们认为每个接口都检查了"变成可观测的东西。
+- **在 CI 里用两个账号测**，并对这个测试失败告警 —— 这是发现一个没人看的检查发生回归的唯一办法。
 
 ### 缓解
 

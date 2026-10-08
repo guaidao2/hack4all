@@ -91,7 +91,7 @@ Cloudflare, AWS WAF, Akamai and ModSecurity CRS each have preferences — ModSec
 
 Do not memorise vendor payload lists: they age within weeks. Memorise the four layers above and test which one the target is weak at.
 
-### Detection, from the defender's side
+### Detection
 
 WAF bypass is a signal, not a failure of the WAF:
 
@@ -189,7 +189,7 @@ Cloudflare、AWS WAF、Akamai 与 ModSecurity CRS 各有偏好 —— ModSecurit
 
 不要背厂商 payload 清单：它们几周就过时。记住上面四层，然后测出目标弱在哪一层。
 
-### 检测（防守方视角）
+### 检测
 
 WAF 绕过是一个信号，而不是 WAF 的失败：
 

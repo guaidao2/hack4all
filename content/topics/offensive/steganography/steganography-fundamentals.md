@@ -78,7 +78,7 @@ This is the category that matters for detection, because it does not need a file
 - **Timing**: intervals between packets encoding bits, which is slow but very hard to see in flow data.
 - **Protocol padding**: unused or reserved fields that a tolerant parser ignores.
 
-### Detection, from the defender's side
+### Detection
 
 - **Entropy and regularity in outbound traffic.** Encoded data looks random, and random-looking data leaving a corporate network on a schedule is the signal. DNS labels longer than thirty characters, or a fixed query interval, are both worth an alert.
 - **Volume relative to the channel.** A DNS server receiving ten megabytes a day of query data from one host is doing something other than resolving names.
@@ -161,7 +161,7 @@ steghide extract -sf suspect.jpg     # 需要口令，通常是空的
 - **时序**：用包的间隔编码比特，很慢，但在流数据里非常难看出来。
 - **协议填充**：宽容的解析器会忽略的未使用或保留字段。
 
-### 检测（防守方视角）
+### 检测
 
 - **出站流量的熵与规律性。** 编码后的数据看起来是随机的，而"看起来随机、又按固定节奏离开企业网络"就是信号。DNS 标签超过三十个字符，或者查询间隔固定，都值得一条告警。
 - **相对于通道本身的体量。** 一台主机每天让 DNS 服务器承载十兆字节的查询数据，它干的事肯定不是解析域名。

@@ -83,7 +83,7 @@ This is purple-team work and it needs to be agreed in advance: the point is to m
 
 The output is a detection matrix, which is a much more valuable deliverable than a list of vulnerabilities, because it tells the client what their monitoring actually sees.
 
-### Detection, from the defender's side
+### Detection
 
 - **Log every authentication and authorization decision**, including the denials, and include enough context to reconstruct the story (who, what, from where, with what result).
 - **Send logs somewhere the application account cannot reach** — a central collector with append-only permissions, and ideally immutability for the retention period.
@@ -172,7 +172,7 @@ The output is a detection matrix, which is a much more valuable deliverable than
 
 产出是一张检测矩阵 —— 它比一份漏洞清单有价值得多，因为它告诉客户"你们的监控实际能看到什么"。
 
-### 检测（防守方视角）
+### 检测
 
 - **记录每一次认证与授权决定**，包括拒绝的那些，并带上足以还原故事的上下文（谁、做了什么、从哪来、结果如何）。
 - **把日志送到应用账号够不着的地方** —— 集中收集器、只追加权限，最好在保留期内不可变。

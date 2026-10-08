@@ -111,7 +111,7 @@ A useful asset list has, per asset: hostname, IP, owner, technology, exposure, a
 
 Then write down the hypothesis before testing. "This staging app has a login and the same codebase as production, so an auth bug here is likely to be reproducible there" is worth more than twenty more subdomains.
 
-### Detection, from the defender's side
+### Detection
 
 - **Certificate transparency is public.** If you do not monitor it for your own domain, an attacker will find your new internal hostname before your inventory does.
 - **DNS and flow logs** show the passive-DNS aggregators and the mass resolution attempts; a sudden burst of NXDOMAIN for your domain is reconnaissance.
@@ -226,7 +226,7 @@ subzy run --targets subdomains.txt
 
 然后在开测**之前**把假设写下来。"这个 staging 应用有登录页、代码和生产同一套，所以这里如果有认证缺陷，生产上很可能也能复现"——这一句话比再多二十个子域都值钱。
 
-### 检测（防守方视角）
+### 检测
 
 - **证书透明日志是公开的。** 如果你不监控自己域名的日志，攻击者会比你的资产台账更早发现你新上的内网主机名。
 - **DNS 与流量日志**能看出被动 DNS 聚合器和批量解析尝试；某个域名突然出现大量 NXDOMAIN 查询，就是侦察。

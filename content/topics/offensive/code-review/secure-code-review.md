@@ -86,7 +86,7 @@ codeql database create db --language=javascript && codeql database analyze db
 - Every secret: is it from configuration, and is it logged anywhere?
 - Every error path: does it fail closed, and does it leak detail?
 
-### Detection, from the building side
+### Detection
 
 Code review is a control, not just a test:
 
@@ -178,7 +178,7 @@ codeql database create db --language=javascript && codeql database analyze db
 - 每个密钥：是否来自配置，是否被记进了任何日志？
 - 每条错误路径：是否安全失败，是否泄漏细节？
 
-### 检测（从建设方角度）
+### 检测
 
 代码审计是一种控制手段，不只是测试：
 

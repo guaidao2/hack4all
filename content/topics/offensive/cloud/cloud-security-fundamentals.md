@@ -113,7 +113,7 @@ aws secretsmanager get-secret-value --secret-id prod/db
 
 The mechanics differ, the questions do not: what can this identity do, what does it trust, what can it read, and what does it leave in the log.
 
-### Detection, from the defender's side
+### Detection
 
 The cloud's advantage is that the control plane is logged by default — as long as it is enabled, in every region, and shipped somewhere the attacker cannot reach.
 
@@ -235,7 +235,7 @@ aws secretsmanager get-secret-value --secret-id prod/db
 
 机制不同，问题相同：这个身份能做什么、它信任谁、它能读什么、以及它在日志里留下什么。
 
-### 检测（防守方视角）
+### 检测
 
 云的优势是控制面默认就有日志 —— 前提是它被开启了、覆盖所有区域、并且被送到了攻击者够不着的地方。
 

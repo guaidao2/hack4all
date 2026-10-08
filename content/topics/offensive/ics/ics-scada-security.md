@@ -75,7 +75,7 @@ The distinction that matters for testing: **read function codes versus write fun
 
 A useful rule of thumb: if you cannot state exactly what the packet will cause, do not send it.
 
-### Detection, from the defender's side
+### Detection
 
 - **Passive monitoring is the primary control** in an OT network, because you cannot install agents on a PLC. ICS-aware tools (Nozomi, Claroty, Dragos) and Zeek with protocol parsers learn the normal pattern of polling and commands, and alert on deviations: a new device talking Modbus, a workstation sending write function codes it never sends, a scan that touches every unit.
 - **Watch the boundary crossings.** DMZ traffic, dual-homed hosts, and remote-access sessions are where the IT-to-OT path lives.
@@ -156,7 +156,7 @@ Level 3 的**工程师站**值得单独说一句。它装着 PLC 编程软件，
 
 一条实用的判断标准：**如果你说不清这个包会造成什么，就不要发它。**
 
-### 检测（防守方视角）
+### 检测
 
 - **被动监控是 OT 网络的首要控制**，因为你没法在 PLC 上装 agent。带 ICS 感知的工具（Nozomi、Claroty、Dragos）以及带协议解析器的 Zeek，会学习正常的轮询与指令模式，并对偏离告警：新设备在说 Modbus、某台工作站在发它从没发过的写功能码、一次覆盖每个单元的扫描。
 - **盯住边界穿越。** DMZ 流量、双网卡主机、远程访问会话 —— IT 通往 OT 的路就在这些地方。

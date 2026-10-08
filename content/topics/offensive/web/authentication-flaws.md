@@ -104,7 +104,7 @@ Not every test needs a payload. Useful habits:
 - Change the `Host` header on any request that triggers an email.
 - Watch the response codes: a login that returns 200 and a body containing `"success": false` is a different code path from a 401, and often a weaker one.
 
-### Detection, from the defender's side
+### Detection
 
 - **Rate limits per account, per IP and per device**, and alerts on distributed spraying (many accounts, one password) rather than only on volume against one account.
 - **Reset token requests** spiking for a single account, or for addresses that do not exist.
@@ -215,7 +215,7 @@ ffuf -u https://target/mfa -X POST -d 'code=FUZZ&session=...' -w <(seq -w 0 9999
 - 对任何会触发邮件的请求，改一下 `Host` 头。
 - 盯响应码：返回 200 而响应体里写着 `"success": false` 的登录，走的是另一条代码路径，而且往往更弱。
 
-### 检测（防守方视角）
+### 检测
 
 - **按账号、按 IP、按设备分别限流**，并对分布式喷洒（很多账号、同一个口令）告警，而不只是盯单个账号的请求量。
 - **单个账号的重置 token 请求激增**，或者对不存在的地址请求重置。

@@ -118,7 +118,7 @@ The last one deserves emphasis: in most real environments, the unpatched vulnera
 
 Before finishing, agree what to leave behind (usually nothing) and what to clean up.
 
-### Detection, from the defender's side
+### Detection
 
 - **BloodHound is a double-edged tool**: run it yourself, and treat every path it finds to Tier 0 as a ticket. What an attacker finds in an hour is what you could have found first.
 - **Session hunting**: which privileged accounts are logged into which workstations. That is the graph an attacker follows, and it is usually a finding on its own.
@@ -240,7 +240,7 @@ bloodhound-python -u user -p pass -d corp.local -ns 10.10.10.10 -c All
 
 收尾前把"留下什么"（通常什么都不留）和"清理什么"跟客户确认清楚。
 
-### 检测（防守方视角）
+### 检测
 
 - **BloodHound 是双刃剑**：自己跑一遍，把它找到的每一条通往 Tier 0 的路径当工单处理。攻击者一小时找到的东西，本来是你该先找到的。
 - **会话搜索**：哪些特权账号登录在哪台工作站上。那是攻击者会跟着走的图，而它本身往往就是一个发现。

@@ -59,7 +59,7 @@ The practical conclusion: **evasion is a budget, not a state.** You spend it on 
 
 And the boundary worth stating plainly: this knowledge is for authorised testing and detection engineering. Deploying it against systems you do not have written permission to test is a crime in most jurisdictions, and it is not what this guide is for.
 
-### Detection — the part that actually decides the engagement
+### Detection
 
 Every technique above has a telemetry counterpart, and the defenders who win are the ones who correlate rather than block:
 
@@ -127,7 +127,7 @@ Every technique above has a telemetry counterpart, and the defenders who win are
 
 有一点边界值得直说：这些知识用于**授权测试和检测工程**。把它用在没有书面授权测试的系统上是犯罪，也不是这份指南的目的。
 
-### 检测 —— 真正决定项目成败的部分
+### 检测
 
 上面每一种手法都有对应的遥测，而赢的防守方做的是关联，不是拦截：
 
