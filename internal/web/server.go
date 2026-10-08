@@ -57,10 +57,34 @@ func Serve(cfg Config) error {
 	if err != nil {
 		return err
 	}
-	url := "http://" + ln.Addr().String()
 
-	fmt.Printf("Hack4all web UI  →  %s\n", url)
+	host, port, err := net.SplitHostPort(ln.Addr().String())
+	if err != nil {
+		host, port = ln.Addr().String(), ""
+	}
+	local := bindIsLocal(ln.Addr())
+
+	// The browser always runs on this machine, so localhost is the right URL
+	// even when the listener is shared with the network.
+	url := "http://localhost:" + port
+
+	// ASCII only in the banner and in the addresses below: a Chinese Windows
+	// console decodes our UTF-8 output as GBK, and even an em dash comes out as
+	// mojibake. The URL is what an operator pastes into a browser, so it has to
+	// survive every console.
+	fmt.Printf("Hack4all web UI  ->  http://localhost:%s\n", port)
+	if local {
+		fmt.Printf("                     (this machine only)\n")
+	} else {
+		fmt.Printf("                     http://%s:%s  (all interfaces)\n", host, port)
+		for _, ip := range localIPv4s() {
+			fmt.Printf("                     http://%s:%s\n", ip, port)
+		}
+	}
 	fmt.Printf("%d techniques loaded. Press Ctrl+C to stop.\n", cfg.Library.Len())
+	if !local {
+		fmt.Println("Note: reachable from the network. Anyone who can reach this host can read the library.")
+	}
 	if cfg.OpenBrowser {
 		go openBrowser(url)
 	}
@@ -231,6 +255,52 @@ func logRequests(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+// bindIsLocal reports whether a listener is reachable only from this machine.
+//
+// Binding to 0.0.0.0 is a legitimate way to share the library with a team, but
+// it should never happen silently: the content is attack technique material, and
+// the operator deserves to be told they just published it to the network.
+func bindIsLocal(addr net.Addr) bool {
+	if addr == nil {
+		return false
+	}
+	host, _, err := net.SplitHostPort(addr.String())
+	if err != nil {
+		return false
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
+}
+
+// localIPv4s lists this machine's non-loopback IPv4 addresses, so a shared
+// instance can print URLs that someone can actually paste to a colleague.
+func localIPv4s() []string {
+	var out []string
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return out
+	}
+	for _, iface := range ifaces {
+		if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback != 0 {
+			continue
+		}
+		addrs, err := iface.Addrs()
+		if err != nil {
+			continue
+		}
+		for _, a := range addrs {
+			ipnet, ok := a.(*net.IPNet)
+			if !ok {
+				continue
+			}
+			if ip4 := ipnet.IP.To4(); ip4 != nil {
+				out = append(out, ip4.String())
+			}
+		}
+	}
+	return out
 }
 
 func openBrowser(url string) {

@@ -18,8 +18,10 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/guaidao2/hack4all/content"
@@ -83,8 +85,7 @@ func run(args []string) error {
 			fmt.Printf("hack4all %s\n", version)
 			return nil
 		case "help", "-h", "--help":
-			usage(os.Stdout)
-			return nil
+			return runHelp(args[1:])
 		}
 	}
 
@@ -300,12 +301,19 @@ func runTUI(args []string) error {
 
 func runWeb(args []string) error {
 	fs := newFlagSet("web")
-	addr := fs.String("addr", "127.0.0.1:8080", "listen address")
+	host := fs.String("host", "127.0.0.1", "listen host; use 0.0.0.0 to share on the local network")
+	port := fs.Int("port", 8080, "listen port; 0 picks a free one")
+	addr := fs.String("addr", "", "full listen address host:port; overrides --host and --port")
 	lang := fs.String("lang", core.DefaultLang, "default content language")
 	contentDir := fs.String("content", "", "load techniques from this directory instead of the embedded library")
 	noOpen := fs.Bool("no-open", false, "do not try to open a browser")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+
+	listen := *addr
+	if listen == "" {
+		listen = net.JoinHostPort(*host, strconv.Itoa(*port))
 	}
 
 	lib, err := openLibrary(*contentDir)
@@ -315,7 +323,7 @@ func runWeb(args []string) error {
 	warnLoadErrors(lib)
 	return web.Serve(web.Config{
 		Library:     lib,
-		Addr:        *addr,
+		Addr:        listen,
 		DefaultLang: core.NormalizeLang(*lang),
 		OpenBrowser: !*noOpen,
 	})
@@ -369,13 +377,79 @@ func firstNonEmpty(values ...string) string {
 	return ""
 }
 
-func usage(w io.Writer) {
-	fmt.Fprint(w, `Hack4all — a bilingual technique guide for penetration testing, red teaming and bug bounty hunting
-Hack4all — 渗透测试 / 红队 / bug bounty 双语技术点指南
+// runHelp prints the help in the requested language.
+func runHelp(args []string) error {
+	fs := newFlagSet("help")
+	lang := fs.String("lang", core.DefaultLang, "output language: en or zh")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	usage(os.Stdout, core.NormalizeLang(*lang))
+	return nil
+}
+
+const usageZH = `Hack4all - 渗透测试 / 红队 / bug bounty 双语技术点指南
+
+用法
+  hack4all                        交互式终端界面
+  hack4all web                    本地网页，默认 127.0.0.1:8080
+  hack4all web --port 9000        8080 被占用时换个端口
+  hack4all web --host 0.0.0.0     共享给局域网
+  hack4all -x "查询"              输出一篇技术点
+  hack4all -x "查询" --json       同上，机器可读（给脚本和 AI）
+  hack4all list                   列出全部技术点
+  hack4all list --category offensive/web
+  hack4all check                  校验内容库（CI 会跑）
+  hack4all version | help
+
+查询语法
+  空格分隔的词是「与」关系：      hack4all -x "ntlm relay"
+  按字段限定：                    category:offensive/web  tag:kerberos  tool:hashcat
+                                  attck:T1558  platform:windows  difficulty:intermediate
+                                  id:kerberoasting
+  组合使用：                      hack4all -x "category:offensive relay"
+
+终端界面按键
+  up / down、鼠标滚轮     在列表里移动；指针在右侧时滚轮滚动正文
+  单击                    选中列表项
+  PgUp / PgDn             滚动正文
+  Tab                     切换语言（en / zh）
+  Esc                     先清空搜索，再按一次退出
+  Ctrl+C                  退出
+
+参数
+  -x, -query 字符串   搜索词，或精确的技术点 id
+  -lang en|zh         内容语言（默认 en）
+  -limit N            -x 模式最多返回几篇（默认 1，0 表示不限）
+  -json               JSON 输出，与网页 API 结构一致
+  -outline            只列章节标题，不输出全文
+  -content 目录       从指定目录读内容，而不是用内置的
+
+退出码
+  0  成功
+  1  出错（参数错误、内容不可读）
+  2  查询执行了，但没有匹配
+
+英文帮助：hack4all help（不带 -lang 时默认英文）
+`
+
+func usage(w io.Writer, lang string) {
+	if core.NormalizeLang(lang) == core.LangZH {
+		fmt.Fprint(w, usageZH)
+		return
+	}
+	fmt.Fprint(w, usageEN)
+}
+
+// usageEN is the English help, deliberately ASCII-only: a Chinese Windows console
+// decodes our UTF-8 output as GBK, and an arrow or a dash comes out as mojibake.
+const usageEN = `Hack4all - a bilingual technique guide for penetration testing, red teaming and bug bounty hunting
 
 USAGE
   hack4all                        interactive TUI
   hack4all web                    local web UI on 127.0.0.1:8080
+  hack4all web --port 9000        a different port, when 8080 is taken
+  hack4all web --host 0.0.0.0     share it with the local network
   hack4all -x "QUERY"             one technique, rendered for a terminal
   hack4all -x "QUERY" --json      the same result for scripts and AI agents
   hack4all list                   list every technique
@@ -391,8 +465,8 @@ QUERY SYNTAX
   combine them:                   hack4all -x "category:offensive relay"
 
 TUI KEYS
-  ↑ ↓  / mouse wheel    move in the list; over the detail pane it scrolls the
-                        technique instead
+  up / down, wheel      move in the list; over the detail pane the wheel scrolls
+                        the technique instead
   click                 select a list entry
   PgUp / PgDn           scroll the technique
   Tab                   switch language (en / zh)
@@ -412,5 +486,6 @@ EXIT CODES
   0  success
   1  error (bad flags, unreadable content)
   2  the query ran but matched nothing
-`)
-}
+
+Chinese help: hack4all help -lang zh
+`
