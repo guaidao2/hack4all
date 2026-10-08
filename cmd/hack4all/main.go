@@ -116,6 +116,17 @@ func runQuery(args []string) error {
 		return err
 	}
 
+	// Go's flag package stops parsing at the first positional argument, so
+	// anything written after one is dropped — including a -lang that was placed
+	// after a stray argument. Silently ignoring the flag someone just typed is
+	// exactly the failure this project tries not to have, so say it out loud.
+	if rest := fs.Args(); len(rest) > 0 && (*x != "" || *query != "") {
+		fmt.Fprintf(os.Stderr, "hack4all: warning: ignoring extra argument(s): %s\n", strings.Join(rest, " "))
+		if looksLikeFlag(rest) {
+			fmt.Fprintln(os.Stderr, `hack4all: hint: flags must come before the query — try: hack4all -lang zh -x "QUERY"`)
+		}
+	}
+
 	q := firstNonEmpty(*x, *query, strings.Join(fs.Args(), " "))
 	if strings.TrimSpace(q) == "" {
 		fs.Usage()
@@ -375,6 +386,18 @@ func firstNonEmpty(values ...string) string {
 		}
 	}
 	return ""
+}
+
+// looksLikeFlag reports whether any argument was probably meant to be a flag.
+// That is the case in "hack4all -x QUERY extra -lang zh", where the language
+// flag is swallowed because it came after a positional argument.
+func looksLikeFlag(args []string) bool {
+	for _, a := range args {
+		if strings.HasPrefix(a, "-") {
+			return true
+		}
+	}
+	return false
 }
 
 // runHelp prints the help in the requested language.
