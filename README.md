@@ -237,8 +237,10 @@ from silently eating the payload. Something to decide at release time, not now.
 
 Early but usable. The three front-ends work end to end, the TUI renders the
 Markdown, the content format is frozen and `hack4all check` guards it. The
-The knowledge base covers 49 techniques across 24 categories, and is still
-growing.
+The knowledge base covers 50 techniques across 25 categories, and is still
+growing. If you are planning or finishing a red team engagement, start with the
+tactical map — `hack4all -x id:red-team-tactical-map` — which is a coverage
+checklist for the whole engagement rather than a single technique.
 
 Tags may carry Chinese terms as well as English ones (`越权`, `未授权访问`), because
 readers search in whichever language they think in, and a filename-derived id is
