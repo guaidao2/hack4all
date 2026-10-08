@@ -2,7 +2,7 @@
 id: insecure-design
 title_en: Insecure Design
 title_zh: 不安全设计
-summary_en: Every other category on this list is a mistake in code. This one is a mistake in the plan: the control was never designed, so there is nothing for the code to get wrong. It is also the category scanners cannot see, because nothing is malformed.
+summary_en: Every other category on this list is a mistake in code. This one is a mistake in the plan — the control was never designed, so there is nothing for the code to get wrong. It is also the category scanners cannot see, because nothing is malformed.
 summary_zh: 这份清单上其他类别都是代码写错了。这一类的错在计划里：那个控制从来没被设计出来，所以代码没什么可写错的。它也是扫描器看不见的一类 —— 因为请求没有任何畸形之处。
 tags: [web, owasp-a04, insecure-design, business-logic, threat-modeling]
 tools: [Burp Suite, ffuf, Turbo Intruder]
