@@ -225,12 +225,35 @@ from silently eating the payload. Something to decide at release time, not now.
 
 Early but usable. The three front-ends work end to end, the TUI renders the
 Markdown, the content format is frozen and `hack4all check` guards it. The
-knowledge base is still small (11 techniques) — coverage breadth is the next big
+knowledge base is still small (13 techniques) — coverage breadth is the next big
 chunk of work.
 
 Tags may carry Chinese terms as well as English ones (`越权`, `未授权访问`), because
 readers search in whichever language they think in, and a filename-derived id is
 not always the word they will reach for.
+
+## Scope and content policy
+
+This guide is for authorised security work: penetration tests, red team
+engagements, in-scope bug bounty programmes, CTFs, and the defensive engineering
+that detects the same techniques. What it documents is the same material that
+public references — MITRE ATT&CK, vendor research, conference talks — already
+document.
+
+Three editorial rules apply to every contribution:
+
+- **Technique over weapon.** Explain how a class of attack works, what it looks
+  like from the defender's side, and how it is detected and mitigated. Do not
+  add ready-to-run payload chains. A proof that demonstrates access is in scope;
+  anything whose only effect is destroying data or taking a service down is not.
+- **Detection is not optional.** Every technique is expected to say what
+  telemetry it produces. An entry without a detection section is incomplete.
+- **English first, Chinese alongside.** Both languages, in that order, in one
+  file.
+
+Neither the authors nor the contributors accept responsibility for misuse. If
+you are testing a system you do not have written permission to test, none of
+this is for you.
 
 ## License
 
