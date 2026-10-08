@@ -452,6 +452,18 @@ func TestValidateFlagsIncompleteEntry(t *testing.T) {
 	}
 }
 
+func TestParseExplainsColonInFrontmatterValues(t *testing.T) {
+	// The single easiest frontmatter mistake: a value with a bare ": " in it.
+	_, err := Parse("web/x.md", []byte(
+		"---\nid: x\ntitle_en: A title with a colon: inside it\n---\n\n<!-- lang:en -->\nbody\n"))
+	if err == nil {
+		t.Fatal("expected an unquoted colon in frontmatter to fail the parse")
+	}
+	if !strings.Contains(err.Error(), `": "`) {
+		t.Errorf("the error should explain the colon problem to a contributor, got: %v", err)
+	}
+}
+
 func TestValidateSurfacesLoadErrorsAsErrors(t *testing.T) {
 	mfs := mapFS(map[string]string{
 		"topics/a/broken.md": "---\nid: broken\ntitle_en: Broken\n",

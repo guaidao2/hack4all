@@ -136,6 +136,11 @@ updated: 2026-10-08
 | `difficulty` | no | `beginner` / `intermediate` / `advanced` |
 | `updated` | no | `YYYY-MM-DD` |
 
+> **A note on YAML.** A bare `": "` inside a frontmatter value is read as a
+> nested key and the whole file stops loading. Either rephrase it, or quote the
+> value: `summary_en: "Careful here: this is fine."`. `hack4all check` points
+> this out when it happens, because it is the easiest mistake to make by hand.
+
 **Categories come from the directory, never from frontmatter.** One source of
 truth, so the tree and the metadata cannot disagree:
 
@@ -220,8 +225,8 @@ from silently eating the payload. Something to decide at release time, not now.
 
 Early but usable. The three front-ends work end to end, the TUI renders the
 Markdown, the content format is frozen and `hack4all check` guards it. The
-knowledge base itself is just getting started (3 techniques); coverage breadth
-is the next big chunk of work.
+knowledge base is small (5 techniques) — coverage breadth is the next big chunk
+of work.
 
 ## License
 

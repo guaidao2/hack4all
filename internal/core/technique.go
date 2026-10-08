@@ -161,7 +161,7 @@ func Parse(relPath string, data []byte) (*Technique, error) {
 	var fm frontmatter
 	if len(fmRaw) > 0 {
 		if err := yaml.Unmarshal(fmRaw, &fm); err != nil {
-			return nil, fmt.Errorf("frontmatter: %w", err)
+			return nil, fmt.Errorf("frontmatter: %w%s", err, yamlHint(err))
 		}
 	}
 
@@ -194,6 +194,18 @@ func Parse(relPath string, data []byte) (*Technique, error) {
 
 	t.BuildIndex()
 	return t, nil
+}
+
+// yamlHint turns the most common frontmatter mistake into advice.
+//
+// A bare ": " inside a value makes YAML think a nested mapping begins, and the
+// parser's own message ("mapping values are not allowed in this context") says
+// nothing about what a contributor should do differently.
+func yamlHint(err error) string {
+	if err != nil && strings.Contains(err.Error(), "mapping values are not allowed") {
+		return ` — a frontmatter value contains ": ", which YAML reads as a nested key; rephrase it or wrap the value in quotes`
+	}
+	return ""
 }
 
 // splitFrontmatter separates an optional leading YAML block from the body.
