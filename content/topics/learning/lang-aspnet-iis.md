@@ -113,7 +113,7 @@ This is where upload bypasses live, and **each of these is a real Windows behavi
 |---|---|---|
 | **Trailing dots and spaces are stripped** | `shell.aspx.` and `shell.aspx ` both resolve to `shell.aspx` | A check comparing the literal string sees a different name than the filesystem does |
 | **Alternate data streams** | `file.aspx::$DATA` addresses the default data stream of `file.aspx` | The `::$DATA` suffix is not part of the filename to Windows, but it looks like one to a string check |
-| **Reserved device names** | `CON`, `PRN`, `AUX`, `NUL`, `COM1`–`COM9`, `LPT1`–`LPT9` are special **in any directory and with any extension** | A filename allowlist that does not account for them can be made to write somewhere unexpected |
+| **Reserved device names** | `CON`, `PRN`, `AUX`, `NUL`, `COM1`–`COM9`, `LPT1`–`LPT9` can be interpreted as devices rather than files, depending on how the path reaches the OS | A filename allowlist that does not account for them can behave unexpectedly |
 | **Case-insensitive comparison** | `Shell.ASPX` is `shell.aspx` | A case-sensitive extension check passes on a filesystem that will execute it |
 | **8.3 short names** | Long names have a generated short alias like `SHELL~1.ASP` | A check that only considers the long name misses that both names refer to one file |
 | **Both separators** | `\` and `/` are both separators on Windows | A normalisation that only handles `/` is incomplete here |
@@ -124,10 +124,10 @@ Set-Content -Path '.tmp\wtest\shell.aspx.' -Value 'x'
 Get-ChildItem '.tmp\wtest' | Select-Object -ExpandProperty Name      # shell.aspx
 
 # alternate data stream: one file, two contents
-Set-Content -Path '.tmp\wtest\report.txt'      -Value 'visible'
-Set-Content -Path '.tmp\wtest\report.txt:note' -Value 'hidden stream'
+Set-Content -Path '.tmp\wtest\report.txt' -Value 'visible'
+Add-Content -Path '.tmp\wtest\report.txt' -Stream 'note' -Value 'hidden stream'
 Get-Content  -Path '.tmp\wtest\report.txt'                    # visible
-Get-Content  -Path '.tmp\wtest\report.txt:note'               # hidden stream
+Get-Content  -Path '.tmp\wtest\report.txt' -Stream 'note'     # hidden stream
 Get-Item     -Path '.tmp\wtest\report.txt' -Stream * | Select-Object Stream, Length
 
 # case-insensitivity: one file, two spellings
@@ -303,7 +303,7 @@ ASP.NET 把控件状态留在页面里的方式是**把它序列化并送到浏�
 |---|---|---|
 | **末尾的点和空格会被剥掉** | `shell.aspx.` 与 `shell.aspx ` 都解析到 `shell.aspx` | 做字面字符串比较的检查看到的，和文件系统看到的是不同的名字 |
 | **备用数据流** | `file.aspx::$DATA` 指向 `file.aspx` 的默认数据流 | 对 Windows 来说 `::$DATA` 不是文件名的一部分，但字符串检查看起来像 |
-| **保留设备名** | `CON`、`PRN`、`AUX`、`NUL`、`COM1`–`COM9`、`LPT1`–`LPT9` **在任何目录、任何扩展名下**都是特殊的 | 一份没考虑它们的文件名白名单，可以被诱导写到意想不到的地方 |
+| **保留设备名** | `CON`、`PRN`、`AUX`、`NUL`、`COM1`–`COM9`、`LPT1`–`LPT9` 可能被解释成设备而不是文件，取决于路径怎么到达操作系统 | 一份没考虑它们的文件名白名单，行为可能出人意料 |
 | **大小写不敏感的比较** | `Shell.ASPX` 就是 `shell.aspx` | 区分大小写的扩展名检查，在一个会执行它的文件系统上通过了 |
 | **8.3 短名** | 长名字会有生成的短别名，如 `SHELL~1.ASP` | 只看长名字的检查，漏掉了两个名字指的是同一个文件 |
 | **两种分隔符** | Windows 上 `\` 与 `/` 都是分隔符 | 只处理 `/` 的规范化在这里是不完整的 |
