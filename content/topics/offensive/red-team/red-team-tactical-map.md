@@ -255,7 +255,7 @@ Related: `-x id:insecure-design`
 
 ### 纵向：各个阶段
 
-#### 一、范围与交战规则
+#### 1. 范围与交战规则
 
 - [ ] 资产清单是完整的：子公司、近期收购、云账号、第三方托管服务、IPv6 段、持有生产数据的非生产环境。
 - [ ] 禁止项是写下来的，不是默认的：不做拒绝服务、不做社会工程、不做物理接触、不碰安全系统。
@@ -265,7 +265,7 @@ Related: `-x id:insecure-design`
 
 **常被漏掉：** 云和 CI 不在资产清单里，因为没人把它们当成"资产"；IPv6 是活的，但没被列进去；刚被收购那家公司的域名纸面上在范围内，而测试人员根本不知道。
 
-#### 二、侦察
+#### 2. 侦察
 
 - [ ] 外部 DNS、子域、证书透明度、历史记录。
 - [ ] 云存储、快照、容器镜像仓库、暴露的管理面板。
@@ -277,7 +277,7 @@ Related: `-x id:insecure-design`
 
 相关：`-x id:attack-surface-recon`
 
-#### 三、初始访问
+#### 3. 初始访问
 
 - [ ] 面向互联网的服务，包括没人做台账的那些设备（VPN、邮件网关、文件传输）。
 - [ ] 凭据复用与口令喷洒，打任何会认证的东西。
@@ -289,7 +289,7 @@ Related: `-x id:insecure-design`
 
 相关：`-x id:vulnerable-outdated-components`、`-x id:authentication-flaws`、`-x id:supply-chain-security`
 
-#### 四、立足点与执行
+#### 4. 立足点与执行
 
 - [ ] 这个访问稳定到能扛过一次重启或服务重启。
 - [ ] 你清楚自己握着的是哪个账号、哪台主机，以及它是不是服务账号。
@@ -300,7 +300,7 @@ Related: `-x id:insecure-design`
 
 相关：`-x id:tunneling-and-pivoting`
 
-#### 五、提权
+#### 5. 提权
 
 - [ ] 本地：服务配置错误、可写路径、令牌与特权、计划任务、内核。
 - [ ] 域：ACL 滥用、证书服务、委派、组成员关系路径。
@@ -310,7 +310,7 @@ Related: `-x id:insecure-design`
 
 相关：`-x id:linux-privilege-escalation`、`-x id:ad-acl-abuse`、`-x id:adcs-certificate-abuse`、`-x id:aws-iam-privilege-escalation`
 
-#### 六、凭据访问
+#### 6. 凭据访问
 
 - [ ] 内存与磁盘：LSASS、SAM、LSA secrets、缓存的域凭据。
 - [ ] 配置与脚本：应用配置、部署脚本、无人值守安装文件、GPP。
@@ -322,7 +322,7 @@ Related: `-x id:insecure-design`
 
 相关：`-x id:kerberoasting`、`-x id:ntlm-relay`、`-x id:software-data-integrity-failures`
 
-#### 七、发现
+#### 7. 发现
 
 - [ ] 域与林：信任、站点、组成员关系、特权账号。
 - [ ] 会话：哪个特权账号登录在哪里 —— 这才是攻击者真正会走的那张图。
@@ -334,7 +334,7 @@ Related: `-x id:insecure-design`
 
 相关：`-x id:internal-network-methodology`
 
-#### 八、横向移动
+#### 8. 横向移动
 
 - [ ] 基于凭据：SMB、WinRM、RDP、SSH、远程服务。
 - [ ] 基于票据：pass-the-ticket、overpass-the-hash、委派滥用。
@@ -345,7 +345,7 @@ Related: `-x id:insecure-design`
 
 相关：`-x id:windows-lateral-movement`
 
-#### 九、持久化
+#### 9. 持久化
 
 - [ ] 主机：服务、计划任务、WMI 订阅、账号、SSH key。
 - [ ] 域：ACL 变更、证书模板、SID history、信任修改。
@@ -354,7 +354,7 @@ Related: `-x id:insecure-design`
 
 **常被漏掉：** 云侧持久化被整个跳过；以及放在构建流水线里的持久化 —— 它能扛过每一次主机重建。
 
-#### 十、防御规避
+#### 10. 防御规避
 
 - [ ] 到底有什么在看：EDR、Sysmon、应用日志、云审计日志、SIEM。
 - [ ] 你自己制造的日志缺口，以及本来就存在的日志缺口。
@@ -364,7 +364,7 @@ Related: `-x id:insecure-design`
 
 相关：`-x id:edr-evasion-fundamentals`、`-x id:logging-monitoring-failures`
 
-#### 十一、命令与控制
+#### 11. 命令与控制
 
 - [ ] 一条与网络正常流量相称的通道，并且有备用。
 - [ ] 出网规则实测过：到底哪些目的地是允许的。
@@ -372,7 +372,7 @@ Related: `-x id:insecure-design`
 
 相关：`-x id:c2-fundamentals`
 
-#### 十二、收集与外泄
+#### 12. 收集与外泄
 
 - [ ] 被识别出来的是**真正要紧的数据**，不只是容易拿到的数据。
 - [ ] 外泄是用"能证明问题的最小体量"演示的。
@@ -380,13 +380,13 @@ Related: `-x id:insecure-design`
 
 **常被漏掉：** 证明"能访问"而没有真的把数据拿走，并且在报告里说明这一点 —— 这通常才是客户想要的。
 
-#### 十三、目标与影响
+#### 13. 目标与影响
 
 - [ ] 约定的目标达成了，并且有不含歧义的证据。
 - [ ] 影响是用业务语言表达的：哪个系统、什么数据、多少用户。
 - [ ] 报告里写的是**真正要紧的那条路径**，而不是技术上最漂亮的那条。
 
-#### 十四、检测能力评估
+#### 14. 检测能力评估
 
 - [ ] 对每一个重要动作：记录了吗、告警了吗、响应了吗？
 - [ ] 检测矩阵是用客户自己的数据做出来的、和他们一起复核的，而不是你自己断言的。
@@ -396,7 +396,7 @@ Related: `-x id:insecure-design`
 
 相关：`-x id:logging-monitoring-failures`
 
-#### 十五、报告与清理
+#### 15. 报告与清理
 
 - [ ] 你制造的每一个产物都被清理，且"造过什么"的清单在报告里。
 - [ ] 收集到的凭据与数据已销毁，且销毁有记录。
