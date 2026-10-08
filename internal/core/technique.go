@@ -165,6 +165,9 @@ func Parse(relPath string, data []byte) (*Technique, error) {
 		}
 	}
 
+	if dup := duplicateLangMark(body); dup != "" {
+		return nil, fmt.Errorf("duplicate <!-- lang:%s --> marker: each language must appear exactly once", dup)
+	}
 	langs := splitLanguages(body)
 	t := &Technique{
 		ID:         strings.TrimSpace(fm.ID),
@@ -223,6 +226,23 @@ func splitFrontmatter(data []byte) ([]byte, string, error) {
 	fm := rest[:end]
 	body := strings.TrimPrefix(rest[end+len("\n---"):], "\n")
 	return []byte(fm), body, nil
+}
+
+// duplicateLangMark reports a language marker that appears more than once.
+//
+// A repeat is always a mistake, and a silent one: splitLanguages assigns per
+// language, so a second "<!-- lang:zh -->" with text after it replaces the first
+// Chinese section instead of adding to it. Quietly losing half an entry is worse
+// than refusing to load the file.
+func duplicateLangMark(body string) string {
+	counts := map[string]int{}
+	for _, m := range langMarkRe.FindAllStringSubmatch(body, -1) {
+		counts[m[1]]++
+		if counts[m[1]] > 1 {
+			return m[1]
+		}
+	}
+	return ""
 }
 
 // splitLanguages splits the body on the language markers. A body with no
