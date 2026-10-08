@@ -20,6 +20,7 @@ var fieldWeights = []struct {
 	weight int
 }{
 	{"title", 12},
+	{"id", 11},  // the filename-derived identifier, which people also search for
 	{"meta", 8}, // tags, tools, ATT&CK ids, platform, category, difficulty
 	{"summary", 4},
 	{"body", 2},

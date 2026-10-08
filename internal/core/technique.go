@@ -109,6 +109,10 @@ func (t *Technique) TitleFor(lang string) string {
 // available for callers that mutate a Technique in memory.
 func (t *Technique) BuildIndex() {
 	t.index = map[string]string{
+		// The id is indexed as well. It is derived from the filename, so people
+		// search for it — "classical-ciphers", "red-team-tactical-map" — without
+		// thinking about the id: prefix.
+		"id":    strings.ToLower(t.ID),
 		"title": strings.ToLower(t.Title.EN + " " + t.Title.ZH),
 		"meta": strings.ToLower(strings.Join([]string{
 			strings.Join(t.Tags, " "),
