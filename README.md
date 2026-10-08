@@ -12,6 +12,31 @@ newcomer and a veteran can read the same page.
 
 ---
 
+## Install
+
+Download one self-contained binary from the
+[releases page](https://github.com/guaidao2/hack4all/releases) — Linux, macOS
+and Windows, amd64 and arm64 — and run it. The knowledge base is embedded and
+the binaries are static (`CGO_ENABLED=0`), so there is nothing else to install.
+
+```bash
+# Linux / macOS
+chmod +x hack4all_v0.1.0_linux_amd64
+./hack4all_v0.1.0_linux_amd64 -x "kerberos"
+
+# Windows (PowerShell)
+.\hack4all_v0.1.0_windows_amd64.exe -x "kerberos"
+```
+
+Check a download against the checksums published alongside it:
+
+```bash
+sha256sum -c hack4all_0.1.0_checksums.txt         # Linux
+shasum -a 256 -c hack4all_0.1.0_checksums.txt     # macOS
+```
+
+To build it yourself instead, see [Build](#build) below.
+
 ## Three front-ends, one library
 
 | Entry point | Command | For |
