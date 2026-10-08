@@ -23,11 +23,11 @@ the binaries are static (`CGO_ENABLED=0`), so there is nothing else to install.
 
 ```bash
 # Linux / macOS
-chmod +x hack4all_v1.0.0_linux_amd64
-./hack4all_v1.0.0_linux_amd64 -x "kerberos"
+chmod +x hack4all_v1.5.0_linux_amd64
+./hack4all_v1.5.0_linux_amd64 -x "kerberos"
 
 # Windows (PowerShell)
-.\hack4all_v1.0.0_windows_amd64.exe -x "kerberos"
+.\hack4all_v1.5.0_windows_amd64.exe -x "kerberos"
 ```
 
 Check a download against the checksums published alongside it:

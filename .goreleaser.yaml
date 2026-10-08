@@ -61,7 +61,7 @@ release:
     Chinese terms as well as English ones (`越权`, `未授权访问`), because readers
     search in the language they think in.
 
-    98 techniques across 26 categories, in two layers: a beginner track for
+    135 techniques across 26 categories, in two layers: a beginner track for
     someone starting from nothing, and a detail layer that explains the mechanism
     before the command. Written in English first with Chinese alongside, in the
     same file, every entry with a detection and a mitigation section. No emoji.
