@@ -240,7 +240,9 @@ Markdown, the content format is frozen and `hack4all check` guards it. The
 The knowledge base covers 50 techniques across 24 categories, and is still
 growing. If you are planning or finishing a red team engagement, start with the
 tactical map — `hack4all -x id:red-team-tactical-map` — which is a coverage
-checklist for the whole engagement rather than a single technique.
+checklist for the whole engagement rather than a single technique. The web UI
+draws the same file as a page at `/map.html`: stages as a timeline, tickable
+items, and a progress bar you can keep open while you work.
 
 Tags may carry Chinese terms as well as English ones (`越权`, `未授权访问`), because
 readers search in whichever language they think in, and a filename-derived id is
