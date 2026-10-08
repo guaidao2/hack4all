@@ -21,7 +21,11 @@ func Run(lib *core.Library, lang string) error {
 		return fmt.Errorf("the knowledge base is empty")
 	}
 	m := newModel(lib, lang)
-	_, err := tea.NewProgram(m, tea.WithAltScreen()).Run()
+	_, err := tea.NewProgram(m,
+		tea.WithAltScreen(),
+		// Wheel and clicks. Holding Shift still selects text in most terminals.
+		tea.WithMouseCellMotion(),
+	).Run()
 	return err
 }
 
@@ -43,8 +47,7 @@ type model struct {
 	height   int
 
 	// listWidth is the left pane's total width, border included. lipgloss Width
-	// covers the whole block, frame included, so the drawable content is
-	// listWidth-2.
+	// sizes the block *inside* the frame, so the drawable content is listWidth-2.
 	listWidth int
 }
 
@@ -77,24 +80,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.syncDetail()
 		return m, nil
 
+	case tea.MouseMsg:
+		return m.handleMouse(msg)
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
 
 		case "esc":
+			// Esc clears the search first, then exits. `q` is deliberately not a
+			// quit key: it has to be typeable, since tools like qsfuzz exist and
+			// searches like "sqli" contain it.
 			if m.input.Value() != "" {
 				m.input.SetValue("")
 				m.refilter()
 				return m, nil
 			}
 			return m, tea.Quit
-
-		case "q":
-			// Only quit on q when it is not being typed into the search box.
-			if m.input.Value() == "" {
-				return m, tea.Quit
-			}
 
 		case "tab":
 			if m.lang == core.LangZH {
@@ -146,6 +149,81 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+// rowsPerItem is how many terminal rows one list entry occupies: its id and its
+// title. The list window and the mouse handler must agree on this.
+const rowsPerItem = 2
+
+// mouseScrollLines is how far one wheel notch scrolls the detail pane.
+const mouseScrollLines = 3
+
+// listWindow returns the index of the first visible entry and how many fit.
+func (m model) listWindow() (start, visible int) {
+	visible = m.viewport.Height / rowsPerItem
+	if visible < 1 {
+		visible = 1
+	}
+	if m.cursor >= visible {
+		start = m.cursor - visible + 1
+	}
+	return start, visible
+}
+
+// handleMouse routes wheel and click events to whichever pane the pointer is
+// over: scrolling the list moves the selection (the detail follows it), scrolling
+// the detail moves the technique.
+func (m model) handleMouse(msg tea.MouseMsg) (tea.Model, tea.Cmd) {
+	inList := msg.X < m.listWidth
+
+	switch msg.Button {
+	case tea.MouseButtonWheelUp:
+		if inList {
+			if m.cursor > 0 {
+				m.cursor--
+				m.syncDetail()
+			}
+			return m, nil
+		}
+		m.viewport.LineUp(mouseScrollLines)
+		return m, nil
+
+	case tea.MouseButtonWheelDown:
+		if inList {
+			if m.cursor < len(m.matches)-1 {
+				m.cursor++
+				m.syncDetail()
+			}
+			return m, nil
+		}
+		m.viewport.LineDown(mouseScrollLines)
+		return m, nil
+	}
+
+	if msg.Action == tea.MouseActionPress && msg.Button == tea.MouseButtonLeft && inList {
+		if i, ok := m.rowAt(msg.Y); ok {
+			m.cursor = i
+			m.syncDetail()
+		}
+	}
+	return m, nil
+}
+
+// rowAt maps a terminal row to a list index. The rows above the list content are
+// the header, the search box and the pane's top border.
+func (m model) rowAt(y int) (int, bool) {
+	const listTop = 3
+	row := y - listTop
+	if row < 0 {
+		return 0, false
+	}
+
+	start, visible := m.listWindow()
+	i := start + row/rowsPerItem
+	if i < start || i >= start+visible || i >= len(m.matches) {
+		return 0, false
+	}
+	return i, true
+}
+
 func (m model) View() string {
 	if m.width == 0 {
 		return "loading…"
@@ -178,7 +256,7 @@ func (m model) View() string {
 	body := lipgloss.JoinHorizontal(lipgloss.Top, left, " ", right)
 
 	footer := footerStyle.Width(m.width).Render(fmt.Sprintf(
-		"%d/%d   ↑↓ move   PgUp/PgDn scroll   Tab language (%s)   Esc clear/quit   q quit",
+		"%d/%d   ↑↓ or wheel   PgUp/PgDn scroll   Tab language (%s)   Esc clear / exit   Ctrl+C exit",
 		min(m.cursor+1, len(m.matches)), len(m.matches), langName(m.lang)))
 
 	// No background colour anywhere on purpose: the terminal's own transparency
@@ -324,17 +402,7 @@ func labelRow(label, value string, width int) []string {
 }
 
 func (m model) renderList() string {
-	// Each entry takes two rows: the id, then the title.
-	const perItem = 2
-	visible := m.viewport.Height / perItem
-	if visible < 1 {
-		visible = 1
-	}
-
-	start := 0
-	if m.cursor >= visible {
-		start = m.cursor - visible + 1
-	}
+	start, visible := m.listWindow()
 
 	inner := m.listWidth - 2 // the pane's drawable width
 	textWidth := inner - 2   // minus the item padding

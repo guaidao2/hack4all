@@ -328,8 +328,8 @@ func firstNonEmpty(values ...string) string {
 }
 
 func usage(w io.Writer) {
-	fmt.Fprint(w, `Hack4all — 渗透 / 红队 / bug bounty 双语技术点指南
-Hack4all — a bilingual technique guide for pentest, red team and bug bounty
+	fmt.Fprint(w, `Hack4all — a bilingual technique guide for penetration testing, red teaming and bug bounty hunting
+Hack4all — 渗透测试 / 红队 / bug bounty 双语技术点指南
 
 USAGE
   hack4all                        interactive TUI
@@ -347,6 +347,15 @@ QUERY SYNTAX
                                   attck:T1558  platform:windows  difficulty:intermediate
                                   id:kerberoasting
   combine them:                   hack4all -x "category:offensive relay"
+
+TUI KEYS
+  ↑ ↓  / mouse wheel    move in the list; over the detail pane it scrolls the
+                        technique instead
+  click                 select a list entry
+  PgUp / PgDn           scroll the technique
+  Tab                   switch language (en / zh)
+  Esc                   clear the search, then exit
+  Ctrl+C                exit
 
 FLAGS
   -x, -query STRING   search terms, or an exact technique id
