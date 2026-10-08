@@ -247,7 +247,7 @@ func main() {
 }
 ```
 
-Note the second line: **the absolute second argument does not replace the base** — Go cleans and keeps it inside. That is a real difference from `os.path.join` in Python, and it is an example of a language choosing the safer default. The third line shows what is still left to handle: `..` **is** resolved, so a traversal can still escape the base, which is why the containment check (resolve, then compare with a separator) is still required.
+Note the second line: **the absolute second argument does not replace the base** — Go cleans and keeps it inside. That is a real difference from `os.path.join` in Python, and it is an example of a language choosing the safer default. The third line shows what is still left to handle: `..` **is** resolved, so a traversal can still escape the base, which is why the containment check (resolve, then compare with a separator) is still required. And note the separators themselves: `filepath` is platform-dependent and produces backslashes on Windows, while `path.Join` always uses forward slashes — a pair worth keeping straight when a path is built in one place and checked in another.
 
 `html/template` versus `text/template` deserves emphasis because it is the one Go mistake that produces a classic web vulnerability:
 
@@ -520,7 +520,7 @@ func main() {
 }
 ```
 
-注意第二行：**绝对路径的第二个参数不会替换掉基准** —— Go 会清理并把它保留在里面。这与 Python 的 `os.path.join` 是实打实的差别，也是一个"语言选择了更安全的默认值"的例子。第三行则显示了还剩下什么要处理：`..` **确实**会被解析，所以路径穿越仍然能逃出基准 —— 这就是为什么那个包含检查（先解析、再带分隔符比较前缀）依然必需。
+注意第二行：**绝对路径的第二个参数不会替换掉基准** —— Go 会清理并把它保留在里面。这与 Python 的 `os.path.join` 是实打实的差别，也是一个"语言选择了更安全的默认值"的例子。第三行则显示了还剩下什么要处理：`..` **确实**会被解析，所以路径穿越仍然能逃出基准 —— 这就是为什么那个包含检查（先解析、再带分隔符比较前缀）依然必需。还要注意分隔符本身：`filepath` 是平台相关的，在 Windows 上产出反斜杠，而 `path.Join` 永远用正斜杠 —— 当一条路径在一个地方构造、在另一个地方检查时，这一对值得分清。
 
 `html/template` 与 `text/template` 值得强调，因为它是 Go 里唯一会产生经典 Web 漏洞的错误：
 
