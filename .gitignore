@@ -1,0 +1,15 @@
+bin/
+dist/
+*.exe
+*.test
+*.out
+
+# reference checkouts and scratch space (never committed)
+/.refs/
+/.tmp/
+
+# editor / OS noise
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

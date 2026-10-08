@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hack4all — pentest / red team / bug bounty guide</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">HACK4ALL</div>
+  <input id="q" type="search" placeholder="search: technique, tag, tool, ATT&CK id…  (try cache:offensive)" autocomplete="off" autofocus>
+  <div class="langs">
+    <button data-lang="en" class="lang-btn">EN</button>
+    <button data-lang="zh" class="lang-btn">中文</button>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="sidebar">
+    <div class="side-title">Categories</div>
+    <nav id="cats"></nav>
+  </aside>
+
+  <section class="listpane">
+    <div class="list-head"><span id="listmeta">loading…</span></div>
+    <ul id="list"></ul>
+  </section>
+
+  <article class="detail" id="detail">
+    <div class="placeholder">
+      <h2>Hack4all</h2>
+      <p>A bilingual technique guide for penetration testing, red teaming and bug bounty hunting.</p>
+      <p class="dim">Pick a technique on the left, or search. Every entry is written in English and Chinese in one file.</p>
+      <p class="dim">Non-interactive use: <code>hack4all -x "QUERY" --json</code></p>
+    </div>
+  </article>
+</main>
+
+<footer class="statusbar">
+  <span id="stats"></span>
+  <span class="dim">MIT · guaidao2 &amp; coolmoon</span>
+</footer>
+
+<script src="/app.js"></script>
+</body>
+</html>
