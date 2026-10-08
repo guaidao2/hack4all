@@ -38,22 +38,26 @@ var version = "0.1.0"
 const exitNoMatch = 2
 
 func main() {
-	if err := run(os.Args[1:]); err != nil {
-		if errors.Is(err, flag.ErrHelp) {
-			return
-		}
-		var code int
-		// Always explain ourselves on stderr, even for a no-match exit: a silent
-		// non-zero exit is useless to a human and ambiguous to a script.
-		fmt.Fprintf(os.Stderr, "hack4all: %v\n", err)
-		if errors.As(err, &noMatchError{}) {
-			code = exitNoMatch
-		} else {
-			code = 1
-		}
-		os.Exit(code)
+	err := run(os.Args[1:])
+	if err == nil || errors.Is(err, flag.ErrHelp) {
+		return
 	}
+	// The content check prints its own detailed report; do not repeat it.
+	if errors.Is(err, errCheckFailed) {
+		os.Exit(1)
+	}
+	// Always explain ourselves on stderr, even for a no-match exit: a silent
+	// non-zero exit is useless to a human and ambiguous to a script.
+	fmt.Fprintf(os.Stderr, "hack4all: %v\n", err)
+	if errors.As(err, &noMatchError{}) {
+		os.Exit(exitNoMatch)
+	}
+	os.Exit(1)
 }
+
+// errCheckFailed means `hack4all check` found problems; the report is already on
+// stdout, so main only has to set the exit status.
+var errCheckFailed = errors.New("content check failed")
 
 // noMatchError marks "the query ran fine, there is simply nothing to show".
 type noMatchError struct{ query string }
@@ -73,6 +77,8 @@ func run(args []string) error {
 			return runQuery(args[1:])
 		case "list", "ls":
 			return runList(args[1:])
+		case "check":
+			return runCheck(args[1:])
 		case "version", "-v", "--version":
 			fmt.Printf("hack4all %s\n", version)
 			return nil
@@ -186,6 +192,44 @@ func runList(args []string) error {
 }
 
 // =============================================================================
+// Content check
+// =============================================================================
+
+// runCheck validates the knowledge base and reports what is broken or missing.
+// It is meant to run before a commit and in CI: content that silently fails to
+// load, or a translation that was never written, is invisible otherwise.
+func runCheck(args []string) error {
+	fs := newFlagSet("check")
+	contentDir := fs.String("content", "", "check this directory instead of the embedded library")
+	strict := fs.Bool("strict", false, "treat warnings as failures too")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
+	lib, err := openLibrary(*contentDir)
+	if err != nil {
+		return err
+	}
+
+	issues := lib.Validate()
+	for _, is := range issues {
+		where := is.Path
+		if where == "" {
+			where = "(library)"
+		}
+		fmt.Printf("%-7s %-48s %s\n", is.Level, where, is.Msg)
+	}
+
+	errCount, warnCount := core.CountIssues(issues)
+	fmt.Printf("\n%d technique(s), %d error(s), %d warning(s)\n", lib.Len(), errCount, warnCount)
+
+	if errCount > 0 || (*strict && warnCount > 0) {
+		return errCheckFailed
+	}
+	return nil
+}
+
+// =============================================================================
 // TUI and web
 // =============================================================================
 
@@ -294,7 +338,15 @@ USAGE
   hack4all -x "QUERY" --json      the same result for scripts and AI agents
   hack4all list                   list every technique
   hack4all list --category offensive/web
+  hack4all check                  validate the knowledge base (for CI)
   hack4all version | help
+
+QUERY SYNTAX
+  free words are ANDed:           hack4all -x "ntlm relay"
+  narrow by field:                category:offensive/web  tag:kerberos  tool:hashcat
+                                  attck:T1558  platform:windows  difficulty:intermediate
+                                  id:kerberoasting
+  combine them:                   hack4all -x "category:offensive relay"
 
 FLAGS
   -x, -query STRING   search terms, or an exact technique id

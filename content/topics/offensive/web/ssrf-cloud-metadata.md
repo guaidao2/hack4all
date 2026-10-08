@@ -1,5 +1,5 @@
 ---
-id: cloud-metadata-ssrf
+id: ssrf-cloud-metadata
 title_en: SSRF to Cloud Instance Metadata
 title_zh: SSRF 打云实例元数据
 summary_en: Turn a server-side request forgery into cloud credentials by making the application fetch 169.254.169.254. IMDSv1 needs nothing but a URL; IMDSv2 and GCP/Azure need specific headers or methods, which is where most bypass work happens.

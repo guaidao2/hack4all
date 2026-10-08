@@ -40,11 +40,56 @@ hack4all -x "ssrf" --json --limit 3 | jq '.matches[].id'
 # browse
 hack4all list
 hack4all list --category offensive/web
+
+# narrow a search by field
+hack4all -x "category:offensive/credential-access"
+hack4all -x "attck:T1558"
+hack4all -x "tool:hashcat platform:linux"
+
+# validate the knowledge base (this is what CI runs)
+hack4all check
+hack4all check --strict
 ```
 
 Exit codes: `0` success, `1` real error (bad flags, unreadable content),
 `2` the query ran but matched nothing — the same convention `grep` uses, so a
 script can tell "nothing found" from "something broke".
+
+### Query syntax
+
+Free words are ANDed. Field prefixes narrow the search before ranking, which is
+what makes `-x` useful to a script or an agent: it can ask a precise question
+instead of hoping free text ranks well.
+
+| Prefix | Matches |
+|---|---|
+| `category:offensive/web` | the category subtree |
+| `tag:kerberos` | tag present |
+| `tool:hashcat` | tool present |
+| `attck:T1558` | ATT&CK id present |
+| `platform:windows` | platform present |
+| `difficulty:intermediate` | difficulty present |
+| `id:kerberoasting` | exact technique id |
+
+Values match as case-insensitive substrings, so `attck:T1558` finds
+`T1558.003`. An unrecognised prefix such as `foo:bar` stays a free-text word: a
+query is never silently swallowed by a field the tool does not know about.
+Both languages are indexed at once, so a Chinese query finds an entry whose
+English text is what contains the term, and the reverse.
+
+### The TUI
+
+The interactive view renders the Markdown rather than printing it: headings lose
+their hashes, tables become aligned columns, code fences become indented blocks,
+lists get bullets, and emphasis becomes colour. `Tab` switches the display
+language without losing your place in the list.
+
+Rendering is deliberately done by the project itself rather than by a general
+Markdown library, for two measured reasons: the common terminal renderers do not
+wrap Chinese (no spaces to break on, so paragraphs overflow and get clipped),
+and they paint a document background that would defeat a transparent terminal.
+`hack4all -x` still prints the raw Markdown, because escape sequences are useless
+to a pipe.
 
 ---
 
@@ -113,6 +158,7 @@ Draft files and directories starting with `_` or `.` are skipped by the loader.
 cmd/hack4all/        CLI entry point: subcommand dispatch, flags, -x mode
 internal/core/       the shared library: parse, index, search, JSON shape
 internal/tui/        interactive terminal UI (bubbletea)
+  markdown.go        terminal Markdown renderer: styling and wrapping together
 internal/web/        HTTP server + JSON API + embedded single-page front-end
 content/             the knowledge base, embedded into the binary
   embed.go           go:embed of topics/
@@ -172,9 +218,10 @@ from silently eating the payload. Something to decide at release time, not now.
 
 ## Status
 
-Early. The three front-ends work end to end and the content format is frozen;
-the knowledge base itself is just getting started (3 techniques). Coverage
-breadth is the next big chunk of work.
+Early but usable. The three front-ends work end to end, the TUI renders the
+Markdown, the content format is frozen and `hack4all check` guards it. The
+knowledge base itself is just getting started (3 techniques); coverage breadth
+is the next big chunk of work.
 
 ## License
 

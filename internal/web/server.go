@@ -181,7 +181,8 @@ func lastSegment(p string) string {
 	return p
 }
 
-func inCategory(t *core.Technique, category string) bool {	category = strings.Trim(strings.TrimSpace(category), "/")
+func inCategory(t *core.Technique, category string) bool {
+	category = strings.Trim(strings.TrimSpace(category), "/")
 	if category == "" {
 		return true
 	}

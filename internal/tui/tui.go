@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mattn/go-runewidth"
 
 	"github.com/guaidao2/hack4all/internal/core"
 )
@@ -37,17 +38,21 @@ type model struct {
 	matches []core.Match
 	cursor  int
 
-	viewport  viewport.Model
-	width     int
-	height    int
+	viewport viewport.Model
+	width    int
+	height   int
+
+	// listWidth is the left pane's total width, border included. lipgloss Width
+	// covers the whole block, frame included, so the drawable content is
+	// listWidth-2.
 	listWidth int
 }
 
 func newModel(lib *core.Library, lang string) model {
 	ti := textinput.New()
-	ti.Placeholder = "search: technique, tag, tool, ATT&CK id…"
+	ti.Placeholder = "search: technique, tag, tool, ATT&CK id, category:…"
 	ti.Prompt = "› "
-	ti.CharLimit = 120
+	ti.CharLimit = 160
 	ti.Focus()
 
 	m := model{
@@ -68,6 +73,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 		m.layout()
+		// Re-render: the body was laid out for the previous width.
+		m.syncDetail()
 		return m, nil
 
 	case tea.KeyMsg:
@@ -144,24 +151,38 @@ func (m model) View() string {
 		return "loading…"
 	}
 
-	header := headerStyle.Render("HACK4ALL") +
-		dimStyle.Render(fmt.Sprintf("  %d techniques  ·  %s", m.lib.Len(), langName(m.lang)))
+	header := lipgloss.JoinHorizontal(lipgloss.Top,
+		headerStyle.Render("HACK4ALL"),
+		dimStyle.Render(fmt.Sprintf("  %d techniques", m.lib.Len())),
+		langBadgeStyle.Render(langName(m.lang)),
+	)
 
-	search := searchStyle.Width(m.width - 2).Render(m.input.View())
+	search := searchStyle.Width(m.width).Render(m.input.View())
 
-	left := m.renderList()
-	right := paneStyle.
-		Width(m.viewport.Width).
-		Height(m.viewport.Height).
+	// The panes are sized in whole blocks (borders included); their contents are
+	// one frame smaller, which is why the viewport is asked for +2 here.
+	left := listPaneStyle.
+		Width(m.listWidth).
+		Height(m.viewport.Height + 2).
+		Render(m.renderList())
+
+	right := detailPaneStyle.
+		Width(m.viewport.Width + 2).
+		Height(m.viewport.Height + 2).
 		Render(m.viewport.View())
 
 	body := lipgloss.JoinHorizontal(lipgloss.Top, left, " ", right)
 
-	footer := dimStyle.Render(
-		fmt.Sprintf("  %d/%d  ·  ↑↓ move  ·  PgUp/PgDn scroll  ·  Tab %s  ·  Esc clear/quit  ·  q quit",
-			min(m.cursor+1, len(m.matches)), len(m.matches), langName(m.lang)))
+	footer := footerStyle.Width(m.width).Render(fmt.Sprintf(
+		"%d/%d   ↑↓ move   PgUp/PgDn scroll   Tab language (%s)   Esc clear/quit   q quit",
+		min(m.cursor+1, len(m.matches)), len(m.matches), langName(m.lang)))
 
-	return lipgloss.JoinVertical(lipgloss.Left, header, search, body, footer)
+	// No background colour anywhere on purpose: the terminal's own transparency
+	// (a wallpaper, acrylic, a themed profile) is the user's choice to make. The
+	// full-screen fill only pads the block so the layout cannot shift; the blank
+	// cells stay transparent.
+	return screenStyle.Width(m.width).Height(m.height).Render(
+		lipgloss.JoinVertical(lipgloss.Left, header, search, body, footer))
 }
 
 // =============================================================================
@@ -169,26 +190,35 @@ func (m model) View() string {
 // =============================================================================
 
 func (m *model) layout() {
-	listWidth := m.width * 2 / 5
-	if listWidth < 30 {
-		listWidth = 30
+	// Total width: list block + 1 gap + detail block.
+	listOuter := m.width * 2 / 5
+	if listOuter < 36 {
+		listOuter = 36
 	}
-	if listWidth > 58 {
-		listWidth = 58
+	if listOuter > 62 {
+		listOuter = 62
 	}
-	if listWidth > m.width-24 {
-		listWidth = m.width - 24
+	if listOuter > m.width-34 {
+		listOuter = m.width - 34
 	}
-	m.listWidth = listWidth
+	if listOuter < 22 {
+		listOuter = 22
+	}
+	m.listWidth = listOuter
 
-	m.viewport.Width = m.width - listWidth - 4
+	// The viewport width is the detail pane's drawable area, borders excluded.
+	detailOuter := m.width - listOuter - 1
+	m.viewport.Width = detailOuter - 2
 	if m.viewport.Width < 20 {
 		m.viewport.Width = 20
 	}
+
+	// Rows: header(1) + search(1) + footer(1) + pane borders(2) + 1 slack.
 	m.viewport.Height = m.height - 6
 	if m.viewport.Height < 3 {
 		m.viewport.Height = 3
 	}
+
 	m.input.Width = m.width - 6
 }
 
@@ -201,18 +231,98 @@ func (m *model) refilter() {
 
 func (m *model) syncDetail() {
 	if len(m.matches) == 0 {
-		m.viewport.SetContent(dimStyle.Render("\n  no technique matches this search"))
+		m.viewport.SetContent(dimStyle.Render("no technique matches this search"))
 		return
 	}
 	if m.cursor >= len(m.matches) {
 		m.cursor = len(m.matches) - 1
 	}
-	m.viewport.SetContent(m.matches[m.cursor].Technique.Plain(m.lang))
+	m.viewport.SetContent(m.detailText())
 	m.viewport.GotoTop()
 }
 
+// detailText assembles the right-hand pane for the selected technique: a styled
+// header, then the body rendered from Markdown.
+//
+// The non-interactive CLI keeps printing Technique.Plain (raw Markdown) on
+// purpose — it has no colours to render into, and a script or agent reading
+// stdout is better served by the original text than by escape sequences.
+func (m *model) detailText() string {
+	t := m.matches[m.cursor].Technique
+	width := m.viewport.Width
+	if width < 16 {
+		width = 16
+	}
+
+	title, _ := t.Title.Get(m.lang)
+	summary, _ := t.Summary.Get(m.lang)
+	body, _ := t.Body.Get(m.lang)
+
+	var b []string
+
+	for _, l := range wrapLines(title, width) {
+		b = append(b, titleStyle.Render(l))
+	}
+
+	meta := make([]string, 0, 3)
+	if c := t.CategoryPath(); c != "" {
+		meta = append(meta, c)
+	}
+	if t.Difficulty != "" {
+		meta = append(meta, t.Difficulty)
+	}
+	if t.Updated != "" {
+		meta = append(meta, t.Updated)
+	}
+	if len(meta) > 0 {
+		b = append(b, metaStyle.Render(strings.Join(meta, "  ·  ")))
+	}
+	b = append(b, "")
+
+	b = append(b, labelRow("attck", strings.Join(t.ATTACK, " "), width)...)
+	b = append(b, labelRow("tags", strings.Join(t.Tags, " · "), width)...)
+	b = append(b, labelRow("tools", strings.Join(t.Tools, " · "), width)...)
+
+	if summary != "" {
+		b = append(b, "")
+		for _, l := range wrapLines(summary, width-2) {
+			b = append(b, summaryStyle.Render(l))
+		}
+	}
+
+	b = append(b, "")
+	b = append(b, strings.Split(renderMarkdown(body, width), "\n")...)
+
+	return strings.Join(b, "\n")
+}
+
+// labelRow renders one "label  value" line, wrapping the value under itself.
+func labelRow(label, value string, width int) []string {
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+	const labelWidth = 6
+	avail := width - labelWidth
+	if avail < 8 {
+		avail = 8
+	}
+
+	wrapped := wrapLines(value, avail)
+	out := make([]string, 0, len(wrapped))
+	for i, l := range wrapped {
+		if i == 0 {
+			out = append(out, labelStyle.Render(fmt.Sprintf("%-*s", labelWidth, label))+valueStyle.Render(l))
+		} else {
+			out = append(out, strings.Repeat(" ", labelWidth)+valueStyle.Render(l))
+		}
+	}
+	return out
+}
+
 func (m model) renderList() string {
-	visible := m.viewport.Height
+	// Each entry takes two rows: the id, then the title.
+	const perItem = 2
+	visible := m.viewport.Height / perItem
 	if visible < 1 {
 		visible = 1
 	}
@@ -222,71 +332,138 @@ func (m model) renderList() string {
 		start = m.cursor - visible + 1
 	}
 
+	inner := m.listWidth - 2 // the pane's drawable width
+	textWidth := inner - 2   // minus the item padding
 	var b strings.Builder
+
 	for i := start; i < len(m.matches) && i < start+visible; i++ {
 		t := m.matches[i].Technique
-		line := truncate(t.ID+"  ·  "+t.TitleFor(m.lang), m.listWidth-2)
+		idText := truncate(t.ID, textWidth)
+		titleText := truncate(t.TitleFor(m.lang), textWidth)
+
 		if i == m.cursor {
-			b.WriteString(selectedStyle.Width(m.listWidth - 2).Render(line))
+			b.WriteString(selectedStyle.Width(inner).Render(idText + "\n" + titleText))
 		} else {
-			b.WriteString(itemStyle.Width(m.listWidth - 2).Render(line))
+			b.WriteString(itemStyle.Width(inner).Render(itemIDStyle.Render(idText) + "\n" + titleText))
 		}
 		b.WriteString("\n")
 	}
 	if len(m.matches) == 0 {
-		b.WriteString(dimStyle.Render("  (nothing)"))
+		b.WriteString(dimStyle.Render("(nothing)"))
 	}
 
-	return paneStyle.Width(m.listWidth).Height(m.viewport.Height).Render(b.String())
+	return b.String()
 }
 
 // =============================================================================
-// Styles and small helpers
+// Text wrapping
 // =============================================================================
 
-var (
-	headerStyle   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("205")).Padding(0, 1)
-	searchStyle   = lipgloss.NewStyle().Padding(0, 1).Border(lipgloss.NormalBorder(), false, false, false, false)
-	dimStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
-	itemStyle     = lipgloss.NewStyle().Padding(0, 1).Foreground(lipgloss.Color("252"))
-	selectedStyle = lipgloss.NewStyle().Padding(0, 1).Bold(true).Foreground(lipgloss.Color("229")).
-			Background(lipgloss.Color("57"))
-	paneStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("238")).
-			Padding(0, 1)
-)
-
-func langName(lang string) string {
-	if core.NormalizeLang(lang) == core.LangZH {
-		return "中文"
-	}
-	return "EN"
+// wrapLines wraps text and returns the individual lines.
+func wrapLines(s string, width int) []string {
+	return strings.Split(wrapText(s, width), "\n")
 }
 
-// truncate cuts a string to width terminal cells, counting CJK characters as
-// two cells so Chinese titles do not break the layout.
+// wrapText wraps text to width terminal cells.
+//
+// The viewport does not wrap on its own: it clips. Unwrapped, a paragraph is cut
+// off mid-word and the rest of the line is unreachable. Horizontal rules are left
+// alone; breaking a line of ─── in two helps nobody.
+func wrapText(s string, width int) string {
+	if width <= 0 {
+		return s
+	}
+	var out []string
+	for _, line := range strings.Split(s, "\n") {
+		if isRule(strings.TrimSpace(line)) {
+			out = append(out, line)
+			continue
+		}
+		out = append(out, wrapLine(line, width)...)
+	}
+	return strings.Join(out, "\n")
+}
+
+// wrapLine breaks one line on spaces when it can and between characters when it
+// cannot — Chinese has no spaces, so hard breaking is the only option there.
+func wrapLine(line string, width int) []string {
+	if width < 8 {
+		width = 8
+	}
+	if runewidth.StringWidth(line) <= width {
+		return []string{line}
+	}
+
+	indent := line[:len(line)-len(strings.TrimLeft(line, " \t"))]
+	body := strings.TrimLeft(line, " \t")
+	avail := width - runewidth.StringWidth(indent)
+	if avail < 8 {
+		indent, avail = "", width
+	}
+
+	var out []string
+	var cur strings.Builder
+	curWidth, lastSpace := 0, -1
+
+	flush := func() {
+		out = append(out, indent+strings.TrimRight(cur.String(), " "))
+		cur.Reset()
+		curWidth, lastSpace = 0, -1
+	}
+
+	for _, r := range body {
+		rw := runewidth.RuneWidth(r)
+		if curWidth+rw > avail && curWidth > 0 {
+			if lastSpace >= 0 {
+				// Break at the last space so English words survive intact.
+				s := cur.String()
+				head := strings.TrimRight(s[:lastSpace], " ")
+				tail := strings.TrimLeft(s[lastSpace+1:], " ")
+				out = append(out, indent+head)
+				cur.Reset()
+				cur.WriteString(tail)
+				curWidth, lastSpace = runewidth.StringWidth(tail), -1
+			} else {
+				flush()
+			}
+		}
+		if r == ' ' {
+			lastSpace = cur.Len()
+		}
+		cur.WriteRune(r)
+		curWidth += rw
+	}
+	if strings.TrimSpace(cur.String()) != "" {
+		flush()
+	}
+
+	return out
+}
+
+// isRule reports whether a line is a horizontal rule, e.g. ───── or -----.
+func isRule(s string) bool {
+	rs := []rune(s)
+	if len(rs) < 4 {
+		return false
+	}
+	for _, r := range rs {
+		if r != rs[0] {
+			return false
+		}
+	}
+	return strings.ContainsRune("-=─═_*", rs[0])
+}
+
+// truncate cuts a string to width cells, counting CJK characters as two so a
+// Chinese title cannot push the layout sideways.
 func truncate(s string, width int) string {
 	if width <= 0 {
 		return ""
 	}
-	var b strings.Builder
-	used := 0
-	for _, r := range s {
-		w := 1
-		if r > 0x1100 && (r <= 0x115F || (r >= 0x2E80 && r <= 0xA4CF) ||
-			(r >= 0xAC00 && r <= 0xD7A3) || (r >= 0xF900 && r <= 0xFAFF) ||
-			(r >= 0xFE30 && r <= 0xFE6F) || (r >= 0xFF00 && r <= 0xFF60) ||
-			(r >= 0xFFE0 && r <= 0xFFE6)) {
-			w = 2
-		}
-		if used+w > width {
-			break
-		}
-		b.WriteRune(r)
-		used += w
+	if runewidth.StringWidth(s) <= width {
+		return s
 	}
-	return b.String()
+	return runewidth.Truncate(s, width, "…")
 }
 
 func min(a, b int) int {
@@ -295,3 +472,74 @@ func min(a, b int) int {
 	}
 	return b
 }
+
+func langName(lang string) string {
+	if core.NormalizeLang(lang) == core.LangZH {
+		return "中文"
+	}
+	return "EN"
+}
+
+// =============================================================================
+// Styles
+// =============================================================================
+
+// Colours only, never backgrounds — except where a small patch of colour is the
+// point (the selected row, inline code, a code block). Filling the screen with a
+// background would hide whatever the user deliberately set their terminal to.
+var (
+	colFG   = lipgloss.Color("252")
+	colDim  = lipgloss.Color("243")
+	colAcc  = lipgloss.Color("212")
+	colAcc2 = lipgloss.Color("86")
+	colLine = lipgloss.Color("238")
+
+	// Pads the block to the terminal so the layout cannot jitter. Blank cells
+	// carry no colour, so a transparent terminal stays transparent.
+	screenStyle = lipgloss.NewStyle()
+
+	headerStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(colAcc).
+			Padding(0, 1)
+
+	langBadgeStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("232")).
+			Background(colAcc2).
+			Bold(true).
+			Padding(0, 1)
+
+	dimStyle    = lipgloss.NewStyle().Foreground(colDim)
+	searchStyle = lipgloss.NewStyle().Padding(0, 1)
+
+	listPaneStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(colLine)
+
+	detailPaneStyle = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(colLine).
+			Foreground(colFG)
+
+	itemStyle = lipgloss.NewStyle().
+			Padding(0, 1).
+			Foreground(colFG)
+
+	itemIDStyle = lipgloss.NewStyle().Foreground(colDim)
+
+	selectedStyle = lipgloss.NewStyle().
+			Padding(0, 1).
+			Bold(true).
+			Foreground(lipgloss.Color("231")).
+			Background(lipgloss.Color("61"))
+
+	titleStyle   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("231"))
+	metaStyle    = lipgloss.NewStyle().Foreground(colDim)
+	labelStyle   = lipgloss.NewStyle().Foreground(colAcc2)
+	valueStyle   = lipgloss.NewStyle().Foreground(colFG)
+	summaryStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("223")).Italic(true)
+
+	footerStyle = lipgloss.NewStyle().
+			Foreground(colDim).
+			Padding(0, 1)
+)

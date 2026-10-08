@@ -25,40 +25,23 @@ var fieldWeights = []struct {
 	{"body", 2},
 }
 
-// Search runs a case-insensitive search over the library.
+// Search runs a query over the library.
 //
-// Terms are ANDed: every word in the query must appear somewhere in the entry.
-// Both languages are indexed at once, so a Chinese query finds an entry whose
+// The query may mix free words with field constraints; see ParseQuery. Free
+// words are ANDed: every word must appear somewhere in the entry. Both
+// languages are indexed at once, so a Chinese query finds an entry whose
 // English text is what actually contains the term, and vice versa. Chinese has
 // no word boundaries, so substring matching does the right thing there; for
 // English the AND-of-terms rule keeps results sane.
 //
-// An exact id match always wins and is returned first. A limit <= 0 means "no
-// limit".
+// A limit <= 0 means "no limit". Ties are broken by id so results are stable
+// across runs — an agent relying on the first match must get the same one twice.
 func (l *Library) Search(query string, limit int) []Match {
-	q := strings.ToLower(strings.TrimSpace(query))
-
-	if q == "" {
-		all := make([]Match, 0, len(l.Techniques))
-		for _, t := range l.Techniques {
-			all = append(all, Match{Technique: t})
-		}
-		return clampLimit(all, limit)
-	}
+	q := ParseQuery(query)
 
 	var out []Match
-
-	// Exact id (or exact title) beats everything else.
-	if t, ok := l.Get(q); ok {
-		out = append(out, Match{Technique: t, Score: 1000, Fields: []string{"id"}})
-	}
-
-	terms := strings.Fields(q)
 	for _, t := range l.Techniques {
-		if len(out) > 0 && out[0].Technique == t {
-			continue
-		}
-		score, fields, ok := scoreTechnique(t, terms)
+		score, fields, ok := q.Match(t)
 		if !ok {
 			continue
 		}
