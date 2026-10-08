@@ -200,6 +200,31 @@ func TestAPIUnknownTechniqueIsNotFound(t *testing.T) {
 	}
 }
 
+func TestAPITechniqueCanIncludeTheOutline(t *testing.T) {
+	h, _ := testAPI(t)
+
+	plain := decodeView(t, get(t, h, "/api/technique?id=kerberoasting"))
+	if len(plain.Headings) != 0 {
+		t.Errorf("a plain fetch should not carry headings, got %d", len(plain.Headings))
+	}
+
+	withOutline := decodeView(t, get(t, h, "/api/technique?id=kerberoasting&outline=1"))
+	if len(withOutline.Headings) == 0 {
+		t.Fatal("outline=1 returned no headings")
+	}
+	for _, hd := range withOutline.Headings {
+		if hd.Level == 0 || strings.TrimSpace(hd.Text) == "" {
+			t.Errorf("heading looks empty: %+v", hd)
+		}
+	}
+	// Shell comments inside fenced blocks must not be mistaken for sections.
+	for _, hd := range withOutline.Headings {
+		if strings.HasPrefix(hd.Text, "-") || strings.HasPrefix(hd.Text, "impacket") {
+			t.Errorf("a code line leaked into the outline: %+v", hd)
+		}
+	}
+}
+
 func TestAPICategoriesCountsSubtrees(t *testing.T) {
 	h, lib := testAPI(t)
 	rec := get(t, h, "/api/categories")

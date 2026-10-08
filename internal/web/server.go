@@ -142,7 +142,15 @@ func (s *server) handleTechnique(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "unknown technique: " + id})
 		return
 	}
-	writeJSON(w, http.StatusOK, t.View(s.lang(r), 0))
+
+	lang := s.lang(r)
+	v := t.View(lang, 0)
+	// The UI asks for the outline so it can build a table of contents; a plain
+	// fetch does not pay for it.
+	if r.URL.Query().Get("outline") == "1" {
+		v = t.ViewWithHeadings(lang, 0)
+	}
+	writeJSON(w, http.StatusOK, v)
 }
 
 // GET /api/categories

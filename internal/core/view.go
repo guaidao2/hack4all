@@ -21,6 +21,11 @@ type View struct {
 	Updated    string   `json:"updated"`
 	Path       string   `json:"path"`
 	Score      int      `json:"score,omitempty"`
+
+	// Headings carries the section outline when the caller asked for it — the
+	// CLI's --outline or the web API's ?outline=1. It stays empty otherwise, so
+	// a plain list response does not pay for it.
+	Headings []Heading `json:"headings,omitempty"`
 }
 
 // SearchResponse is the envelope around a set of matches.
@@ -29,6 +34,17 @@ type SearchResponse struct {
 	Lang    string `json:"lang"`
 	Count   int    `json:"count"`
 	Matches []View `json:"matches"`
+}
+
+// ViewWithHeadings is View plus the section outline.
+//
+// It exists for two callers with the same need: an agent that wants to see a
+// technique's structure before pulling the whole body, and the web UI, which
+// builds a table of contents from it.
+func (t *Technique) ViewWithHeadings(lang string, score int) View {
+	v := t.View(lang, score)
+	v.Headings = t.Headings(lang)
+	return v
 }
 
 // View converts a technique into its transfer shape for the given language.

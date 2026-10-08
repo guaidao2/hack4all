@@ -79,7 +79,9 @@ function renderMarkdown(md) {
     const h = /^(#{1,6})\s+(.*)$/.exec(line);
     if (h) {
       const level = Math.min(h[1].length + 1, 6); // body ## is a page-level h3
-      out.push(`<h${level}>${inline(h[2])}</h${level}>`);
+      // The id is what the table of contents scrolls to, so it has to match the
+      // slug the TOC was built with.
+      out.push(`<h${level} id="${escapeHtml(slugify(h[2]))}">${inline(h[2])}</h${level}>`);
       i++;
       continue;
     }
@@ -202,9 +204,67 @@ function renderDetail(t) {
     `<div class="meta">${escapeHtml(t.category.join(' / '))}${t.difficulty ? '  ·  ' + escapeHtml(t.difficulty) : ''}${t.updated ? '  ·  ' + escapeHtml(t.updated) : ''}  ·  ${escapeHtml(t.id)}</div>` +
     `<div class="chips">${chips}</div>` +
     (summary ? `<p class="summary">${inline(summary)}</p>` : '') +
+    renderToc(t.headings) +
     renderMarkdown(t.body);
 
   el.scrollTop = 0;
+  wireToc();
+  addCopyButtons();
+}
+
+// ---------------------------------------------------------------- contents
+
+// slugify has to match what renderMarkdown does to heading ids, or the table of
+// contents scrolls nowhere.
+function slugify(s) {
+  return String(s)
+    .toLowerCase()
+    .replace(/[^\w\u4e00-\u9fa5]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function renderToc(headings) {
+  if (!headings || !headings.length) return '';
+  const items = headings
+    .map((h) => {
+      const indent = Math.max(0, (h.level || 2) - 2) * 10;
+      return `<a class="toc-item" data-target="${escapeHtml(slugify(h.text))}" style="padding-left:${indent}px">${escapeHtml(h.text)}</a>`;
+    })
+    .join('');
+  return `<nav class="toc"><div class="toc-title">On this page</div>${items}</nav>`;
+}
+
+function wireToc() {
+  document.querySelectorAll('.toc-item').forEach((a) => {
+    a.addEventListener('click', () => {
+      const target = document.getElementById(a.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+}
+
+// Every code block gets a copy button: copying a command out of the page is the
+// most common reason to open it at all.
+function addCopyButtons() {
+  document.querySelectorAll('#detail pre').forEach((pre) => {
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'copy';
+    btn.addEventListener('click', async () => {
+      const code = pre.querySelector('code');
+      try {
+        await navigator.clipboard.writeText(code ? code.innerText : pre.innerText);
+        btn.textContent = 'copied';
+      } catch {
+        btn.textContent = 'copy failed';
+      }
+      setTimeout(() => {
+        btn.textContent = 'copy';
+      }, 1200);
+    });
+    pre.appendChild(btn);
+  });
 }
 
 // ---------------------------------------------------------------- actions
@@ -222,7 +282,7 @@ async function search() {
 async function select(id, keepHash) {
   state.selected = id;
   renderList();
-  const t = await api('/api/technique', { id, lang: state.lang });
+  const t = await api('/api/technique', { id, lang: state.lang, outline: 1 });
   renderDetail(t);
   if (!keepHash) location.hash = '#/' + id;
 }
@@ -265,7 +325,7 @@ document.querySelectorAll('.lang-btn').forEach((b) => {
     await loadStats();
     renderList();
     if (state.selected) {
-      const t = await api('/api/technique', { id: state.selected, lang: state.lang });
+      const t = await api('/api/technique', { id: state.selected, lang: state.lang, outline: 1 });
       renderDetail(t);
     }
   });

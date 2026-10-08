@@ -108,6 +108,7 @@ func runQuery(args []string) error {
 	query := fs.String("query", "", "alias of -x")
 	lang := fs.String("lang", core.DefaultLang, "content language: en or zh")
 	asJSON := fs.Bool("json", false, "machine-readable output, same shape as the web API")
+	outline := fs.Bool("outline", false, "list section headings instead of the full text")
 	limit := fs.Int("limit", 1, "maximum matches (0 = all)")
 	contentDir := fs.String("content", "", "load techniques from this directory instead of the embedded library")
 	if err := fs.Parse(args); err != nil {
@@ -127,12 +128,25 @@ func runQuery(args []string) error {
 	}
 	warnLoadErrors(lib)
 
+	if *outline {
+		matches := lib.Search(q, *limit)
+		if len(matches) == 0 {
+			return noMatchError{query: q}
+		}
+		if *asJSON {
+			resp := core.SearchResponse{Query: q, Lang: langCode}
+			for _, m := range matches {
+				resp.Matches = append(resp.Matches, m.Technique.ViewWithHeadings(langCode, m.Score))
+			}
+			resp.Count = len(resp.Matches)
+			return writeJSON(resp)
+		}
+		printOutline(matches, langCode)
+		return nil
+	}
+
 	if *asJSON {
-		resp := lib.SearchResponse(q, langCode, *limit)
-		enc := json.NewEncoder(os.Stdout)
-		enc.SetIndent("", "  ")
-		enc.SetEscapeHTML(false) // keep < > & readable in command examples
-		return enc.Encode(resp)
+		return writeJSON(lib.SearchResponse(q, langCode, *limit))
 	}
 
 	matches := lib.Search(q, *limit)
@@ -146,6 +160,34 @@ func runQuery(args []string) error {
 		fmt.Print(m.Technique.Plain(langCode))
 	}
 	return nil
+}
+
+// printOutline writes only the section structure, so a reader — or an agent —
+// can see what a technique covers before deciding to pull the whole body.
+func printOutline(matches []core.Match, lang string) {
+	for i, m := range matches {
+		if i > 0 {
+			fmt.Println()
+		}
+		t := m.Technique
+		meta := t.CategoryPath()
+		if meta != "" {
+			meta = "  (" + meta + ")"
+		}
+		fmt.Printf("%s — %s%s\n", t.ID, t.TitleFor(lang), meta)
+		for _, h := range t.Headings(lang) {
+			fmt.Printf("%s%s\n", strings.Repeat("  ", max(0, h.Level-1)), h.Text)
+		}
+	}
+}
+
+// writeJSON encodes a machine-readable answer with the settings they all share:
+// indented, and HTML escaping off so command examples stay copy-pasteable.
+func writeJSON(v any) error {
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	enc.SetEscapeHTML(false)
+	return enc.Encode(v)
 }
 
 // =============================================================================
@@ -362,6 +404,8 @@ FLAGS
   -lang en|zh         content language (default: en)
   -limit N            max matches in -x mode (default: 1, 0 = all)
   -json               JSON output, identical shape to the web API
+  -outline            list section headings instead of the full text, so a
+                      reader (or an agent) can see the structure first
   -content DIR        read techniques from DIR instead of the embedded library
 
 EXIT CODES

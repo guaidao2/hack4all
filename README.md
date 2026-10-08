@@ -46,6 +46,10 @@ hack4all -x "category:offensive/credential-access"
 hack4all -x "attck:T1558"
 hack4all -x "tool:hashcat platform:linux"
 
+# see a technique's structure before reading all of it
+hack4all -x "kerberos" --outline
+hack4all -x "category:offensive" --outline --limit 0   # the whole guide's outline
+
 # validate the knowledge base (this is what CI runs)
 hack4all check
 hack4all check --strict
@@ -76,6 +80,14 @@ Values match as case-insensitive substrings, so `attck:T1558` finds
 query is never silently swallowed by a field the tool does not know about.
 Both languages are indexed at once, so a Chinese query finds an entry whose
 English text is what contains the term, and the reverse.
+
+### The web UI
+
+`hack4all web` serves the same library as one page: the category tree, search,
+and a detail pane with a table of contents built from the section headings, plus
+a copy button on every code block. It binds to `127.0.0.1` by default, and there
+is no backend, no telemetry, no CDN and no build step — the page works on a
+machine with no internet at all.
 
 ### The TUI
 
