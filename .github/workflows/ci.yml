@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Build
+        run: go build ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test ./... -count=1
+
+      # Content is code here: a broken frontmatter or a missing translation is a
+      # build failure, not something a reader should discover in the TUI.
+      - name: Check the knowledge base
+        run: go run ./cmd/hack4all check --strict
+
+      - name: Smoke test the non-interactive entry point
+        run: go run ./cmd/hack4all -x "kerberos" --json

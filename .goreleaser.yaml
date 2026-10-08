@@ -1,0 +1,47 @@
+version: 2
+project_name: hack4all
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: hack4all
+    main: ./cmd/hack4all
+    binary: hack4all
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - "-s -w -X main.version=v{{ .Version }}"
+
+# A single self-contained binary: the knowledge base is embedded, so there is
+# nothing else to ship alongside it.
+archives:
+  - id: binary
+    formats: [binary]
+    name_template: "{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^content: add"
+
+release:
+  github:
+    owner: guaidao2
+    name: Hack4all
+  name_template: "Hack4all v{{ .Version }}"

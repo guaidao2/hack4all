@@ -159,16 +159,20 @@ func (m model) View() string {
 
 	search := searchStyle.Width(m.width).Render(m.input.View())
 
-	// The panes are sized in whole blocks (borders included); their contents are
-	// one frame smaller, which is why the viewport is asked for +2 here.
+	// lipgloss sizes the block *inside* the border: Width(n) yields n columns of
+	// content (plus padding), and the frame is added on top. So the panes are one
+	// frame smaller than the space they occupy. Getting this wrong makes the view
+	// wider than the terminal, lipgloss wraps the over-wide lines, the view grows
+	// taller than the screen, and bubbletea scrolls the top of it away — which is
+	// exactly how the list pane silently disappears.
 	left := listPaneStyle.
-		Width(m.listWidth).
-		Height(m.viewport.Height + 2).
+		Width(m.listWidth - 2).
+		Height(m.viewport.Height).
 		Render(m.renderList())
 
 	right := detailPaneStyle.
-		Width(m.viewport.Width + 2).
-		Height(m.viewport.Height + 2).
+		Width(m.viewport.Width).
+		Height(m.viewport.Height).
 		Render(m.viewport.View())
 
 	body := lipgloss.JoinHorizontal(lipgloss.Top, left, " ", right)
