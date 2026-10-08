@@ -50,11 +50,7 @@ func Serve(cfg Config) error {
 		defaultLang: core.NormalizeLang(cfg.DefaultLang),
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/api/search", s.handleSearch)
-	mux.HandleFunc("/api/technique", s.handleTechnique)
-	mux.HandleFunc("/api/categories", s.handleCategories)
-	mux.HandleFunc("/api/stats", s.handleStats)
+	mux := s.apiMux()
 	mux.Handle("/", http.FileServer(http.FS(sub)))
 
 	ln, err := net.Listen("tcp", cfg.Addr)
@@ -83,6 +79,17 @@ func Serve(cfg Config) error {
 type server struct {
 	lib         *core.Library
 	defaultLang string
+}
+
+// apiMux registers the JSON API on its own, so tests can exercise it without the
+// embedded front-end and so the front-end can be mounted separately.
+func (s *server) apiMux() *http.ServeMux {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/search", s.handleSearch)
+	mux.HandleFunc("/api/technique", s.handleTechnique)
+	mux.HandleFunc("/api/categories", s.handleCategories)
+	mux.HandleFunc("/api/stats", s.handleStats)
+	return mux
 }
 
 func (s *server) lang(r *http.Request) string {
