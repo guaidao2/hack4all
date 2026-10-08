@@ -42,6 +42,11 @@ type model struct {
 	matches []core.Match
 	cursor  int
 
+	// listOffset is the index of the first visible list entry. It is kept apart
+	// from the cursor so the pane can scroll before the selection reaches the
+	// edge, leaving a few entries visible below it (see listScrollOff).
+	listOffset int
+
 	viewport viewport.Model
 	width    int
 	height   int
@@ -153,6 +158,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // title. The list window and the mouse handler must agree on this.
 const rowsPerItem = 2
 
+// listScrollOff is how many entries stay visible above and below the cursor.
+//
+// Without it the window only scrolls once the cursor already sits on the last
+// visible row, so the list reads as if it ended at the highlighted entry and
+// there is no hint that more follow. Keeping context on both sides means the
+// next entries are on screen before they are needed.
+const listScrollOff = 3
+
 // mouseScrollLines is how far one wheel notch scrolls the detail pane.
 const mouseScrollLines = 3
 
@@ -162,10 +175,45 @@ func (m model) listWindow() (start, visible int) {
 	if visible < 1 {
 		visible = 1
 	}
-	if m.cursor >= visible {
-		start = m.cursor - visible + 1
+	start = m.listOffset
+	if maxStart := len(m.matches) - visible; start > maxStart {
+		start = maxStart
+	}
+	if start < 0 {
+		start = 0
 	}
 	return start, visible
+}
+
+// clampListOffset moves the window so the cursor sits at least listScrollOff
+// entries away from both edges, as far as the list length allows. Moving inside
+// that band does not scroll, which keeps the highlighted row where the eye
+// expects it instead of dragging it to the edge first.
+func (m *model) clampListOffset() {
+	visible := m.viewport.Height / rowsPerItem
+	if visible < 1 {
+		visible = 1
+	}
+
+	off := listScrollOff
+	if off*2 >= visible {
+		// A short window has no room for context on both sides; keep what fits.
+		off = (visible - 1) / 2
+	}
+
+	if m.cursor > m.listOffset+visible-1-off {
+		m.listOffset = m.cursor - visible + 1 + off
+	}
+	if m.cursor < m.listOffset+off {
+		m.listOffset = m.cursor - off
+	}
+
+	if maxStart := len(m.matches) - visible; m.listOffset > maxStart {
+		m.listOffset = maxStart
+	}
+	if m.listOffset < 0 {
+		m.listOffset = 0
+	}
 }
 
 // handleMouse routes wheel and click events to whichever pane the pointer is
@@ -313,12 +361,17 @@ func (m *model) refilter() {
 
 func (m *model) syncDetail() {
 	if len(m.matches) == 0 {
+		m.listOffset = 0
 		m.viewport.SetContent(dimStyle.Render("no technique matches this search"))
 		return
 	}
 	if m.cursor >= len(m.matches) {
 		m.cursor = len(m.matches) - 1
 	}
+	if m.cursor < 0 {
+		m.cursor = 0
+	}
+	m.clampListOffset()
 	m.viewport.SetContent(m.detailText())
 	m.viewport.GotoTop()
 }
