@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -48,9 +49,20 @@ func TestRenderListContainsEntries(t *testing.T) {
 	if strings.TrimSpace(out) == "" {
 		t.Fatal("renderList produced nothing")
 	}
-	for _, want := range []string{"adcs", "kerberoasting"} {
-		if !strings.Contains(out, want) {
-			t.Errorf("list is missing %q; got:\n%s", want, out)
+
+	// Assert against whatever the library holds rather than naming entries: the
+	// visible window depends on how many techniques exist and which ids sort
+	// first, so a hardcoded id breaks every time content is added.
+	if len(m.matches) == 0 {
+		t.Fatal("no matches to render")
+	}
+	_, visible := m.listWindow()
+	if visible > len(m.matches) {
+		visible = len(m.matches)
+	}
+	for i := 0; i < visible; i++ {
+		if id := m.matches[i].Technique.ID; !strings.Contains(out, id) {
+			t.Errorf("visible entry %d (%s) is missing from the list:\n%s", i, id, out)
 		}
 	}
 }
@@ -87,7 +99,7 @@ func TestViewFitsTheTerminal(t *testing.T) {
 
 	header := lipgloss.JoinHorizontal(lipgloss.Top,
 		headerStyle.Render("HACK4ALL"),
-		dimStyle.Render("  5 techniques"),
+		dimStyle.Render(fmt.Sprintf("  %d techniques", m.lib.Len())),
 		langBadgeStyle.Render(langName(m.lang)))
 	search := searchStyle.Width(m.width).Render(m.input.View())
 	footer := footerStyle.Width(m.width).Render("footer text")
@@ -115,7 +127,9 @@ func TestViewFitsTheTerminal(t *testing.T) {
 	if strings.Count(view, "╭") < 2 {
 		t.Errorf("expected two rounded pane corners, view:\n%s", view)
 	}
-	if !strings.Contains(view, "kerberoasting") {
-		t.Errorf("list entries missing from the rendered view:\n%s", view)
+	// Same reasoning as the list test: assert the first entry rather than a fixed
+	// id, which stops being visible as soon as enough content exists.
+	if id := m.matches[0].Technique.ID; !strings.Contains(view, id) {
+		t.Errorf("the first list entry (%s) is missing from the rendered view:\n%s", id, view)
 	}
 }
