@@ -264,7 +264,7 @@ from silently eating the payload. Something to decide at release time, not now.
 
 Early but usable. The three front-ends work end to end, the TUI renders the
 Markdown, the content format is frozen and `hack4all check` guards it. The
-knowledge base covers 54 techniques across 25 categories, and is still
+knowledge base covers 55 techniques across 25 categories, and is still
 growing. If you are planning or finishing a red team engagement, start with the
 tactical map — `hack4all -x id:red-team-tactical-map` — which is a coverage
 checklist for the whole engagement rather than a single technique. The web UI
