@@ -99,8 +99,8 @@ code, pre, .brand, .side-title, .lang-btn, #listmeta {
 #q:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus); }
 .langs {
   display: flex;
-  gap: 2px;
-  padding: 2px;
+  gap: 3px;
+  padding: 3px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--bg);
@@ -123,13 +123,20 @@ code, pre, .brand, .side-title, .lang-btn, #listmeta {
   border-color: var(--accent-2);
   font-weight: 700;
 }
-/* inside the segmented control the buttons are flush; standalone ones keep the border */
+/* Inside the language control both choices have to read as buttons: the one you
+   are not in is the one you want to click, so it cannot look like a label. */
 .langs .lang-btn {
-  padding: 4px 10px;
-  border-color: transparent;
-  background: transparent;
+  padding: 5px 13px;
+  background: var(--bg-elev);
+  border-color: var(--line-soft);
+  color: var(--fg);
 }
-.langs .lang-btn:hover { border-color: transparent; }
+.langs .lang-btn:hover { background: var(--bg-hover); border-color: #313a46; color: #fff; }
+.langs .lang-btn.active {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  color: #0e1014;
+}
 
 /* ---------- layout ---------- */
 .layout {

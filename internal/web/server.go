@@ -34,15 +34,30 @@ type Config struct {
 	OpenBrowser bool
 }
 
+// Handler returns the whole surface: the API plus the embedded front-end.
+func (s *server) Handler() http.Handler {
+	mux := s.apiMux()
+	if sub, err := fs.Sub(staticFS, "static"); err == nil {
+		mux.Handle("/", revalidate(http.FileServer(http.FS(sub))))
+	}
+	return mux
+}
+
+// revalidate marks the front-end as always worth re-checking. The assets are
+// embedded, so a browser holding yesterday's stylesheet has no way to notice a
+// new binary; with this it asks, and the file server answers 304 when nothing
+// changed.
+func revalidate(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
+		h.ServeHTTP(w, r)
+	})
+}
+
 // Serve runs the web UI until the process is stopped.
 func Serve(cfg Config) error {
 	if cfg.Library == nil || cfg.Library.Len() == 0 {
 		return fmt.Errorf("the knowledge base is empty")
-	}
-
-	sub, err := fs.Sub(staticFS, "static")
-	if err != nil {
-		return err
 	}
 
 	s := &server{
@@ -50,8 +65,7 @@ func Serve(cfg Config) error {
 		defaultLang: core.NormalizeLang(cfg.DefaultLang),
 	}
 
-	mux := s.apiMux()
-	mux.Handle("/", http.FileServer(http.FS(sub)))
+	mux := s.Handler()
 
 	ln, err := net.Listen("tcp", cfg.Addr)
 	if err != nil {

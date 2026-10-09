@@ -42,6 +42,23 @@ func get(t *testing.T, h http.Handler, path string) *httptest.ResponseRecorder {
 	return rec
 }
 
+// A browser that has the front-end cached has to be told to check again,
+// otherwise an upgraded binary keeps serving the previous stylesheet.
+func TestFrontEndIsServedAndRevalidated(t *testing.T) {
+	h := (&server{lib: testLib(t), defaultLang: core.LangEN}).Handler()
+
+	for _, path := range []string{"/", "/style.css", "/app.js"} {
+		rec := get(t, h, path)
+		if rec.Code != http.StatusOK {
+			t.Errorf("GET %s = %d, want 200", path, rec.Code)
+			continue
+		}
+		if got := rec.Header().Get("Cache-Control"); got != "no-cache" {
+			t.Errorf("GET %s: Cache-Control = %q, want %q", path, got, "no-cache")
+		}
+	}
+}
+
 func decodeSearch(t *testing.T, rec *httptest.ResponseRecorder) core.SearchResponse {
 	t.Helper()
 	if rec.Code != http.StatusOK {

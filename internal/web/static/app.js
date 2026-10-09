@@ -173,6 +173,7 @@ function renderCategories(cats) {
   all.addEventListener('click', (e) => {
     e.preventDefault();
     state.category = '';
+    renderCategories(cats); // the highlight has to follow the filter
     search();
   });
   nav.appendChild(all);
@@ -212,7 +213,11 @@ function renderCategories(cats) {
 
     a.addEventListener('click', (e) => {
       e.preventDefault();
-      state.category = c.path === state.category ? '' : c.path;
+      // Clicking a category always selects it. Clearing the filter is what the
+      // "all" entry above is for, so a second click on the same name cannot
+      // drop the reader back to everything by accident.
+      state.category = c.path;
+      renderCategories(cats); // the highlight has to follow the filter
       search();
     });
     nav.appendChild(a);
