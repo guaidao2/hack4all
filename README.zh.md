@@ -14,11 +14,11 @@
 
 ```bash
 # Linux / macOS
-chmod +x hack4all_v1.6.0_linux_amd64
-./hack4all_v1.6.0_linux_amd64 -x "kerberos"
+chmod +x hack4all_v1.6.1_linux_amd64
+./hack4all_v1.6.1_linux_amd64 -x "kerberos"
 
 # Windows（PowerShell）
-.\hack4all_v1.6.0_windows_amd64.exe -x "kerberos"
+.\hack4all_v1.6.1_windows_amd64.exe -x "kerberos"
 ```
 
 校验下载到的文件与发布时一致：

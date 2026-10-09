@@ -159,6 +159,10 @@ function renderList() {
   }
 }
 
+// Categories whose sub-tree is folded away. The panel is redrawn from the same
+// list on every render, so what is folded survives a search.
+const collapsed = new Set();
+
 function renderCategories(cats) {
   const nav = $('#cats');
   nav.innerHTML = '';
@@ -173,20 +177,46 @@ function renderCategories(cats) {
   });
   nav.appendChild(all);
 
-  for (const c of cats) {
+  cats.forEach((c, i) => {
+    // Categories arrive parents-first and sorted, so a path's children are the
+    // entries right after it that start with it. That also tells the panel
+    // which rows carry a fold control and which are leaves.
+    const kids = i + 1 < cats.length && cats[i + 1].path.startsWith(c.path + '/');
+    if ([...collapsed].some((p) => c.path.startsWith(p + '/'))) return;
+
     const a = document.createElement('a');
     a.href = '#';
     a.className = c.depth >= 2 ? 'd2' : c.depth === 1 ? 'd1' : '';
     if (c.path === state.category) a.classList.add('active');
-    a.innerHTML = `${escapeHtml(c.name)}<span class="n">${c.count}</span>`;
     a.title = c.path;
+
+    const tg = document.createElement('span');
+    tg.className = 'tg';
+    // A leaf keeps the same gutter, so every name lines up with its siblings.
+    tg.textContent = kids ? (collapsed.has(c.path) ? '▸' : '▾') : '';
+    if (kids) {
+      tg.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (collapsed.has(c.path)) collapsed.delete(c.path);
+        else collapsed.add(c.path);
+        renderCategories(cats);
+      });
+    }
+    a.appendChild(tg);
+    a.appendChild(document.createTextNode(c.name));
+    const n = document.createElement('span');
+    n.className = 'n';
+    n.textContent = c.count;
+    a.appendChild(n);
+
     a.addEventListener('click', (e) => {
       e.preventDefault();
       state.category = c.path === state.category ? '' : c.path;
       search();
     });
     nav.appendChild(a);
-  }
+  });
 }
 
 function renderDetail(t) {
@@ -289,7 +319,9 @@ async function select(id, keepHash) {
 
 async function loadStats() {
   const s = await api('/api/stats');
-  $('#stats').textContent = `${s.techniques} techniques · ${s.categories} categories · ${s.lang}`;
+  // The language shown is the one the interface is in, which is client state:
+  // the API reports which languages exist, not which one is selected.
+  $('#stats').textContent = `${s.techniques} techniques · ${s.categories} categories · ${state.lang}`;
 }
 
 async function loadCategories() {

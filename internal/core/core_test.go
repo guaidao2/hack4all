@@ -278,6 +278,22 @@ func TestLibraryCategoriesAndCounts(t *testing.T) {
 	if strings.Join(cats, ",") != strings.Join(want, ",") {
 		t.Errorf("Categories() = %v, want %v", cats, want)
 	}
+	// The web panel walks this list once and infers which rows have a sub-tree
+	// from what follows them, so a parent's children have to come directly
+	// after it. A category with children that is not followed by one of them
+	// would render as a leaf.
+	for i, c := range cats {
+		hasChild := i+1 < len(cats) && strings.HasPrefix(cats[i+1], c+"/")
+		if hasChild {
+			continue
+		}
+		for _, other := range cats {
+			if strings.HasPrefix(other, c+"/") {
+				t.Errorf("Categories() = %v: %q has children but %q follows it, want one of its children", cats, c, cats[i+1])
+				break
+			}
+		}
+	}
 	if got := lib.CountInCategory("offensive/web"); got != 2 {
 		t.Errorf("CountInCategory(offensive/web) = %d, want 2", got)
 	}
