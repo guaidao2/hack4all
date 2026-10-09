@@ -32,7 +32,7 @@ import (
 )
 
 // version is overridden at build time with -ldflags "-X main.version=...".
-var version = "1.5.1"
+var version = "1.6.0"
 
 // exitNoMatch is returned when a query is valid but finds nothing. It is
 // distinct from 1 (a real error) so scripts and agents can tell the two apart —

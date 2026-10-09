@@ -1,4 +1,4 @@
-﻿# Hack4all
+# Hack4all
 
 **A bilingual technique guide for penetration testing, red teaming and bug bounty hunting.**
 **面向渗透测试 / 红队 / bug bounty 的双语技术点指南。**
@@ -23,11 +23,11 @@ the binaries are static (`CGO_ENABLED=0`), so there is nothing else to install.
 
 ```bash
 # Linux / macOS
-chmod +x hack4all_v1.5.1_linux_amd64
-./hack4all_v1.5.1_linux_amd64 -x "kerberos"
+chmod +x hack4all_v1.6.0_linux_amd64
+./hack4all_v1.6.0_linux_amd64 -x "kerberos"
 
 # Windows (PowerShell)
-.\hack4all_v1.5.1_windows_amd64.exe -x "kerberos"
+.\hack4all_v1.6.0_windows_amd64.exe -x "kerberos"
 ```
 
 Check a download against the checksums published alongside it:
