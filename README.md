@@ -23,11 +23,11 @@ the binaries are static (`CGO_ENABLED=0`), so there is nothing else to install.
 
 ```bash
 # Linux / macOS
-chmod +x hack4all_v1.6.2_linux_amd64
-./hack4all_v1.6.2_linux_amd64 -x "kerberos"
+chmod +x hack4all_v1.7.0_linux_amd64
+./hack4all_v1.7.0_linux_amd64 -x "kerberos"
 
 # Windows (PowerShell)
-.\hack4all_v1.6.2_windows_amd64.exe -x "kerberos"
+.\hack4all_v1.7.0_windows_amd64.exe -x "kerberos"
 ```
 
 Check a download against the checksums published alongside it:
@@ -264,7 +264,7 @@ from silently eating the payload. Something to decide at release time, not now.
 
 Stable as of 1.0. The three front-ends work end to end, the TUI renders the
 Markdown, the content format is frozen and `hack4all check` guards it. The
-knowledge base covers 175 techniques across 26 categories (including the
+knowledge base covers 189 techniques across 26 categories (including the
 beginner track), and is still
 growing. If you are planning or finishing a red team engagement, start with the
 tactical map — `hack4all -x id:red-team-tactical-map` — which is a coverage
